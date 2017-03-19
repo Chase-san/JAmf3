@@ -33,10 +33,7 @@ public interface ExternalizableFactory {
 	 * @param traitName
 	 *            The name of the trait to create an externalizable for.
 	 * @return The created externalizable for the given trait name, or
-	 *         <code>null</code> if one could not be created. A
-	 *         <code>null</code> value will cause an
-	 *         {@link org.csdgn.amf3.stream.AmfInputStream} or an
-	 *         {@link org.csdgn.amf3.stream.AmfOutputStream} to fail.
+	 *         <code>null</code> if one could not be created.
 	 * 
 	 */
 	public Externalizable create(String traitName);

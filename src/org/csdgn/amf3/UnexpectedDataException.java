@@ -34,7 +34,6 @@ public class UnexpectedDataException extends Exception {
 	 * Creates an UnexpectedDataException without a message.
 	 */
 	public UnexpectedDataException() {
-
 	}
 
 	/**

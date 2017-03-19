@@ -38,7 +38,7 @@ public class AmfByteArray extends AmfValue {
 	/**
 	 * Constructs a new byte array.
 	 */
-	protected AmfByteArray() {
+	public AmfByteArray() {
 		data = new byte[8];
 		size = 0;
 	}
