@@ -22,15 +22,22 @@
 package org.csdgn.amf3;
 
 /**
+ * Associated with the AMF string type. This class simply stores a Java String internally.
  * 
  * @author Robert Maupin
- *
  */
 public class AmfString extends AmfPrimitive<String> {
+	/**
+	 * Defines an empty AmfString with zero length.
+	 */
 	public AmfString() {
 		super("");
 	}
 	
+	/**
+	 * Defines an AmfString with the specified string.
+	 * @param value The string value.
+	 */
 	public AmfString(String value) {
 		super(value);
 	}
@@ -40,6 +47,7 @@ public class AmfString extends AmfPrimitive<String> {
 		return AmfType.String;
 	}
 
+	@Override
 	public boolean equals(AmfValue val) {
 		if(val instanceof AmfString) {
 			String a = getValue();

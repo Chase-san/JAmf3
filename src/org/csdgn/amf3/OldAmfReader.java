@@ -16,7 +16,7 @@ import javax.activation.UnsupportedDataTypeException;
  * @deprecated Use {@link org.csdgn.amf3.stream.AmfInputStream} instead.
  *
  */
-public class AmfReaderClassic {
+public class OldAmfReader {
 	private static class Header {
 		protected boolean isReference;
 		protected int countIndexLength;
@@ -44,7 +44,7 @@ public class AmfReaderClassic {
 	private List<AmfValue> referenceTable;
 	private List<Trait> traitTable;
 	
-	public AmfReaderClassic(InputStream in) {
+	public OldAmfReader(InputStream in) {
 		if(in instanceof DataInputStream) {
 			this.in = (DataInputStream)in;
 		} else {
@@ -64,7 +64,7 @@ public class AmfReaderClassic {
 		return factory;
 	}
 	
-	public AmfFile readFile() throws DataFormatException, IOException {
+	public OldAmfFile readFile() throws DataFormatException, IOException {
 		//calls are evaluated in left to right order
 		if(in.readUnsignedByte() != 0x0 || in.readUnsignedByte() != 0xBF) {
 			throw new DataFormatException("Unknown Endianness");
@@ -92,7 +92,7 @@ public class AmfReaderClassic {
         	throw new DataFormatException("Wrong AMF version");
         }
 
-        AmfFile file = new AmfFile();
+        OldAmfFile file = new OldAmfFile();
         file.setName(name);
         
         // Read content

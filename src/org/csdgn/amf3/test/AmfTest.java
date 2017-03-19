@@ -23,8 +23,8 @@ package org.csdgn.amf3.test;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import org.csdgn.amf3.AmfFile;
-import org.csdgn.amf3.AmfReaderClassic;
+import org.csdgn.amf3.OldAmfFile;
+import org.csdgn.amf3.OldAmfReader;
 
 /**
  * @author Robert Maupin
@@ -35,8 +35,8 @@ public class AmfTest {
 		//fail("Not yet implemented");
 		String filename = "C:/Users/chase/AppData/Roaming/Macromedia/Flash Player/#SharedObjects/QCUXB42F/localhost/TiTs_1.sol";
 		try(InputStream in = new FileInputStream(filename)) {
-			AmfReaderClassic reader = new AmfReaderClassic(in);
-			AmfFile file = reader.readFile();
+			OldAmfReader reader = new OldAmfReader(in);
+			OldAmfFile file = reader.readFile();
 			
 		}
 	}

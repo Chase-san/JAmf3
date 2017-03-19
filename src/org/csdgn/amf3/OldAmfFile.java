@@ -24,11 +24,11 @@ package org.csdgn.amf3;
 import java.util.LinkedHashMap;
 
 /**
- * 
+ * This class is obsolete and should not be used.
+ * @deprecated Use {@link org.csdgn.amf3.stream.AmfInputStream} instead.
  * @author Robert Maupin
- *
  */
-public class AmfFile extends LinkedHashMap<String, AmfValue> {
+public class OldAmfFile extends LinkedHashMap<String, AmfValue> {
 	private static final long serialVersionUID = -3519519376048332883L;
 
 	protected String name;

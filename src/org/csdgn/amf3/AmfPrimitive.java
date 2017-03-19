@@ -22,32 +22,52 @@
 package org.csdgn.amf3;
 
 /**
+ * Defines a single value that has a simple format. Such as a number or string.
  * 
  * @author Robert Maupin
- *
  */
 public abstract class AmfPrimitive<T> extends AmfValue {
 	private T value;
 
+	/**
+	 * Creates a new primitive with the specified value.
+	 * 
+	 * @param value
+	 *            The value of this primitive.
+	 */
 	protected AmfPrimitive(T value) {
 		setValue(value);
 	}
-	
+
+	/**
+	 * Gets the value of this primitive.
+	 * 
+	 * @return The primitives value.
+	 */
 	public T getValue() {
 		return value;
 	}
 
+	/**
+	 * Sets the value of this primitive.
+	 * 
+	 * @param value
+	 *            The value to set.
+	 * @throws UnsupportedOperationException
+	 *             If the value is null, AmfPrimitives do not support null
+	 *             values.
+	 */
 	public void setValue(T value) {
 		if(value == null) {
 			throw new UnsupportedOperationException("A primitive value cannot be null.");
 		}
 		this.value = value;
 	}
-	
+
+	@Override
 	public boolean equals(AmfValue val) {
-		if(val instanceof AmfPrimitive
-		&& val.getType() == getType()) {
-			return getValue() == ((AmfPrimitive<?>)val).getValue();
+		if(val instanceof AmfPrimitive && val.getType() == getType()) {
+			return getValue() == ((AmfPrimitive<?>) val).getValue();
 		}
 		return false;
 	}

@@ -120,7 +120,7 @@ public abstract class AmfVector<E> extends AmfValue {
 	}
 
 	/**
-	 * Constructs a fixed length vector of the given size.
+	 * Constructs a fixed length vector of the specified size.
 	 * 
 	 * @param size
 	 *            the size of the vector.
@@ -131,7 +131,7 @@ public abstract class AmfVector<E> extends AmfValue {
 	}
 
 	/**
-	 * Appends the given value to the end of this vector.
+	 * Appends the specified value to the end of this vector.
 	 * 
 	 * @param value
 	 *            The value to add.

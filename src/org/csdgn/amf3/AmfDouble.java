@@ -22,15 +22,25 @@
 package org.csdgn.amf3;
 
 /**
+ * Associated with the AMF double type. This class simply stores a Java Double
+ * internally.
  * 
  * @author Robert Maupin
- *
  */
 public class AmfDouble extends AmfPrimitive<Double> {
+	/**
+	 * Defines an AmfInteger with a value of 0.0.
+	 */
 	public AmfDouble() {
 		super(0.0);
 	}
-	
+
+	/**
+	 * Defines an AmfDouble with the specified value.
+	 * 
+	 * @param value
+	 *            The double value.
+	 */
 	public AmfDouble(double value) {
 		super(value);
 	}

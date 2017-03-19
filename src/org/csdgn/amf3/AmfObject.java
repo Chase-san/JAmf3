@@ -27,57 +27,76 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Associated with the AMF object type. This handles ActionScript Objects and
+ * custom user classes. Traits are used to describe the attributes of a custom
+ * user class.
  * 
  * @author Robert Maupin
  *
  */
 public class AmfObject extends AmfValue {
-	private Map<String, AmfValue> dynamicMap;
 	private Externalizable customData;
+	private Map<String, AmfValue> dynamicMap;
 	private boolean isDynamic;
 	private boolean isExternalizable;
 	private Map<String, AmfValue> sealedMap;
 	private String traitName;
 
+	/**
+	 * Constructs a AmfObject. By default, the object is not dynamic, is not
+	 * externalizable (and the custom data is null) and has no trait name, and
+	 * has an empty sealed and dynamic map.
+	 */
 	public AmfObject() {
 		isDynamic = false;
 		isExternalizable = true;
 		traitName = "";
 		sealedMap = new LinkedHashMap<String, AmfValue>();
 		dynamicMap = new LinkedHashMap<String, AmfValue>();
+		customData = null;
 	}
 
 	@Override
 	public boolean equals(AmfValue value) {
 		if(value instanceof AmfObject) {
-			AmfObject obj = (AmfObject)value;
-			if(obj.isDynamic != isDynamic
-			&& obj.isExternalizable != isExternalizable
-			&& obj.customData != customData
-			&& !traitName.equals(traitName)) {
+			AmfObject obj = (AmfObject) value;
+			if(obj.isDynamic != isDynamic && obj.isExternalizable != isExternalizable && obj.customData != customData
+					&& !traitName.equals(traitName)) {
 				return false;
 			}
-			return obj.sealedMap.equals(sealedMap)
-				&& obj.dynamicMap.equals(dynamicMap);
+			return obj.sealedMap.equals(sealedMap) && obj.dynamicMap.equals(dynamicMap);
 		}
 		return false;
 	}
 
 	/**
 	 * Gets the dynamic map associated with this object. If the object is not
-	 * dynamic, the map will be empty. Likewise adding to the map will make the
-	 * object dynamic.
+	 * dynamic, the map will be empty. Unless {@link #isDynamic()} is set
+	 * however the values stored in this map will not be saved into an AMF
+	 * object.
 	 * 
-	 * @return
+	 * @return The map associated with the dynamic portion of this object.
 	 */
 	public Map<String, AmfValue> getDynamicMap() {
 		return dynamicMap;
 	}
 
+	/**
+	 * Gets the {@link #Externalizable} associated with this AmfObject.
+	 * 
+	 * @return The externalizable object associated with this AmfObject.
+	 */
 	public Externalizable getExternalizableObject() {
 		return this.customData;
 	}
 
+	/**
+	 * Gets the sealed map associated with this object. Adding to or removing
+	 * from this map will likewise add or remove properties from the Objects
+	 * Trait.
+	 * 
+	 * @return The map associated with the sealed portion of this object.
+	 */
 	public Map<String, AmfValue> getSealedMap() {
 		return sealedMap;
 	}
@@ -114,6 +133,11 @@ public class AmfObject extends AmfValue {
 		};
 	}
 
+	/**
+	 * Gets the trait name associated with this object.
+	 * 
+	 * @return The trait name.
+	 */
 	public String getTraitName() {
 		return traitName;
 	}
@@ -123,17 +147,36 @@ public class AmfObject extends AmfValue {
 		return AmfType.Object;
 	}
 
+	/**
+	 * This is a convenience method that is exactly the same as returned by
+	 * {@link Trait#isDynamic()} method returned in the {@link #getTrait()}
+	 * method of this class. It indicates if this object is considered dynamic
+	 * or not, which determines if the dynamic portion of this AmfObject will be
+	 * stored.
+	 * 
+	 * @return If the object is dynamic.
+	 */
 	public boolean isDynamic() {
 		return isDynamic;
 	}
 
+	/**
+	 * This is a convenience method that is exactly the same as returned by
+	 * {@link Trait#isExternalizable()} method returned in the
+	 * {@link #getTrait()} method of this class. It indicates if this object is
+	 * considered externalizable or not, which determines if the externalizable
+	 * object of this AmfObject will be stored.
+	 * 
+	 * @return If the object is dynamic.
+	 */
 	public boolean isExternalizable() {
 		return isExternalizable;
 	}
 
 	/**
-	 * Determines if this object is dynamic and if the dynamic section will
-	 * be written when writing to an AMF.
+	 * Determines if this object is dynamic and if the dynamic section will be
+	 * stored on writing.
+	 * 
 	 * @param isDynamic
 	 */
 	public void setDynamic(boolean isDynamic) {
@@ -141,20 +184,37 @@ public class AmfObject extends AmfValue {
 	}
 
 	/**
-	 * Determines if this object has externalizable data and if the externalizable
-	 * data will be written when writing to an AMF. If the ExternalizableObject is
-	 * null this value will be treated as false when writing, regardless of its actual
-	 * value.
-	 * @param isExternalizable true to write externalizable data, false otherwise
+	 * Determines if this object has externalizable data and if the
+	 * externalizable data will be written when writing to an AMF. If the
+	 * ExternalizableObject is null this value will be treated as false when
+	 * writing, regardless of its actual value.
+	 * 
+	 * @param isExternalizable
+	 *            true to write externalizable data, false otherwise
 	 */
 	public void setExternalizable(boolean isExternalizable) {
 		this.isExternalizable = isExternalizable;
 	}
 
+	/**
+	 * Sets the Externalizable that this AmfObject will store if
+	 * {@link #isExternalizable()} is set.
+	 * 
+	 * @param ext
+	 *            The Externalizable object.
+	 */
 	public void setExternalizableObject(Externalizable ext) {
 		this.customData = ext;
 	}
 
+	/**
+	 * Sets the name of the trait that will be returned from
+	 * {@link Trait#getName()} that is gotten from this classes
+	 * {@link #getTrait()} method.
+	 * 
+	 * @param traitName
+	 *            The name of the trait.
+	 */
 	public void setTraitName(String traitName) {
 		if(traitName == null) {
 			throw new IllegalArgumentException("Trait Name cannot be null.");

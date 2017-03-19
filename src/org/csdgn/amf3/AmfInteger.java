@@ -22,16 +22,25 @@
 package org.csdgn.amf3;
 
 /**
+ * Associated with the AMF integer type. This class simply stores a Java Integer
+ * internally.
  * 
  * @author Robert Maupin
- *
  */
 public class AmfInteger extends AmfPrimitive<Integer> {
-	
+	/**
+	 * Defines an AmfInteger with a value of zero.
+	 */
 	public AmfInteger() {
 		super(0);
 	}
-	
+
+	/**
+	 * Defines an AmfInteger with the specified value.
+	 * 
+	 * @param value
+	 *            The integer value.
+	 */
 	public AmfInteger(Integer value) {
 		super(value);
 	}
@@ -40,12 +49,24 @@ public class AmfInteger extends AmfPrimitive<Integer> {
 	public AmfType getType() {
 		return AmfType.Integer;
 	}
-	
+
+	/**
+	 * Gets the unsigned value of this integer.
+	 * 
+	 * @return The unsigned integer value.
+	 */
 	public long getUnsignedValue() {
 		return getValue() & 0xFFFFFFFFL;
 	}
-	
+
+	/**
+	 * Sets the value of this integer from an unsigned value.
+	 * 
+	 * @param value
+	 *            The unsigned value. All values will be truncated by ANDing
+	 *            with the value 0xFFFFFFFF.
+	 */
 	public void setUnsignedValue(long value) {
-		setValue((int)(value & 0xFFFFFFFFL));
+		setValue((int) (value & 0xFFFFFFFFL));
 	}
 }
