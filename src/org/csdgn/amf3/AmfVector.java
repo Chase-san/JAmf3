@@ -22,7 +22,10 @@
 package org.csdgn.amf3;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Associated with the AMF undefined type. A AmfVector is a dense array of
@@ -35,7 +38,7 @@ import java.util.List;
  * @param <E>
  *            The type this AmfVector is specialized for.
  */
-public abstract class AmfVector<E> extends AmfValue {
+public abstract class AmfVector<E> extends AmfValue implements List<E> {
 	/**
 	 * A specialized version of the AmfVector for Double values.
 	 * 
@@ -135,18 +138,52 @@ public abstract class AmfVector<E> extends AmfValue {
 	 * 
 	 * @param value
 	 *            The value to add.
+	 * @return Returns: true (as specified by Collection.add)
+	 * 
 	 * @throws UnsupportedOperationException
 	 *             if the vector has a fixed length and adding this value to the
 	 *             vector would cause it to exceed its capacity. See
 	 *             {@link #setFixedLength(boolean)} to change this property
 	 *             and/or {@link #setCapacity(int)} to change the capacity.
 	 */
-	public void add(E value) {
+	@Override
+	public boolean add(E value) {
 		if(size() + 1 > capacity) {
 			String msg = String.format("This vector is fixed length and cannot contain more than %d entries.", capacity);
 			throw new UnsupportedOperationException(msg);
 		}
-		list.add(value);
+		return list.add(value);
+	}
+
+	@Override
+	public void add(int index, E element) {
+		// TODO fix up for capacity!
+		list.add(index, element);
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends E> c) {
+		return list.addAll(c);
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		return list.addAll(index, c);
+	}
+
+	@Override
+	public void clear() {
+		list.clear();
+	}
+
+	@Override
+	public boolean contains(Object o) {
+		return list.contains(o);
+	}
+
+	@Override
+	public boolean containsAll(Collection<?> c) {
+		return list.containsAll(c);
 	}
 
 	@Override
@@ -166,15 +203,7 @@ public abstract class AmfVector<E> extends AmfValue {
 		return false;
 	}
 
-	/**
-	 * Returns the element at the specified position in this vector.
-	 * 
-	 * @param index
-	 *            The index to get the value from.
-	 * @return The value associated with the specified index.
-	 * @throws IndexOutOfBoundsException
-	 *             if the index is out of range (index < 0 || index >= size())
-	 */
+	@Override
 	public E get(int index) {
 		return list.get(index);
 	}
@@ -190,6 +219,16 @@ public abstract class AmfVector<E> extends AmfValue {
 		return capacity;
 	}
 
+	@Override
+	public int indexOf(Object o) {
+		return list.indexOf(o);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return list.isEmpty();
+	}
+
 	/**
 	 * Indicates if this vector has a fixed length.
 	 * 
@@ -199,17 +238,50 @@ public abstract class AmfVector<E> extends AmfValue {
 		return fixedLength;
 	}
 
-	/**
-	 * Removes the element at the specified position in this vector.
-	 * 
-	 * @param index
-	 *            Returns the element at the specified position in this
-	 * @return the element previously at the specified position
-	 * @throws IndexOutOfBoundsException
-	 *             if the index is out of range (index < 0 || index >= size())
-	 */
+	@Override
+	public Iterator<E> iterator() {
+		return list.iterator();
+	}
+
+	@Override
+	public int lastIndexOf(Object o) {
+		return list.lastIndexOf(o);
+	}
+
+	@Override
+	public ListIterator<E> listIterator() {
+		// TODO handle special add (to respect capacity)
+		return list.listIterator();
+	}
+
+	@Override
+	public ListIterator<E> listIterator(int index) {
+		return list.listIterator();
+	}
+
+	@Override
 	public E remove(int index) {
 		return list.remove(index);
+	}
+
+	@Override
+	public boolean remove(Object o) {
+		return list.remove(o);
+	}
+
+	@Override
+	public boolean removeAll(Collection<?> c) {
+		return list.removeAll(c);
+	}
+
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		return list.retainAll(c);
+	}
+
+	@Override
+	public E set(int index, E element) {
+		return list.set(index, element);
 	}
 
 	/**
@@ -246,5 +318,20 @@ public abstract class AmfVector<E> extends AmfValue {
 	 */
 	public int size() {
 		return list.size();
+	}
+
+	@Override
+	public List<E> subList(int fromIndex, int toIndex) {
+		return list.subList(fromIndex, toIndex);
+	}
+
+	@Override
+	public Object[] toArray() {
+		return list.toArray();
+	}
+
+	@Override
+	public <T> T[] toArray(T[] a) {
+		return list.toArray(a);
 	}
 }

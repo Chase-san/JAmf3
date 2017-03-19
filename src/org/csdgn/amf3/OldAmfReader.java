@@ -447,7 +447,8 @@ public class OldAmfReader {
         byte[] array = new byte[h.countIndexLength];
         in.readFully(array);
         
-        AmfByteArray aba = new AmfByteArray(array);
+        AmfByteArray aba = new AmfByteArray();
+        aba.push(array);
         referenceTable.add(aba);
         return aba;
 	}
@@ -467,7 +468,7 @@ public class OldAmfReader {
         for (int j = 0; j < h.countIndexLength; ++j) {
             AmfValue key = readValue();
             AmfValue value = readValue();
-            result.put(key, value);
+            result.getMap().put(key, value);
         }
         
         return result;

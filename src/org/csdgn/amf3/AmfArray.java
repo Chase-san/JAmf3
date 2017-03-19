@@ -22,12 +22,15 @@
 package org.csdgn.amf3;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * Associated with the AMF true and false types. Unlike a standard array in
+ * Java, an AmfArray has both a Dense (List like) portion and an Associative
+ * (Map like) portion. This class handles both of these.
  * 
  * @author Robert Maupin
  *
@@ -36,68 +39,39 @@ public class AmfArray extends AmfValue {
 	private Map<String, AmfValue> associative;
 	private List<AmfValue> dense;
 
+	/**
+	 * Constructs a new AmfArray.
+	 */
 	public AmfArray() {
 		dense = new ArrayList<AmfValue>();
-		associative = new HashMap<String, AmfValue>();
+		associative = new LinkedHashMap<String, AmfValue>();
 	}
-	
+
+	/**
+	 * Adds the given value to the dense portion of this array.
+	 * 
+	 * @param value
+	 *            Value.
+	 */
 	public void add(AmfValue value) {
 		dense.add(value);
 	}
 
+	/**
+	 * Removes all elements from both the dense and associative parts of this
+	 * AmfArray.
+	 */
 	public void clear() {
 		dense.clear();
 		associative.clear();
 	}
 
-	public AmfValue get(int index) {
-		return dense.get(index);
-	}
-
-	public AmfValue get(String key) {
-		return associative.get(key);
-	}
-
-	public int getAssociativeSize() {
-		return associative.size();
-	}
-	
-	public int getDenseSize() {
-		return dense.size();
-	}
-	
-	@Override
-	public AmfType getType() {
-		return AmfType.Array;
-	}
-	
-	public Set<String> keySet() {
-		return associative.keySet();
-	}
-	
-	public AmfValue put(String key, AmfValue value) {
-		return associative.put(key, value);
-	}
-	
-	public AmfValue remove(int index) {
-		return dense.remove(index);
-	}
-	
-	public AmfValue remove(String key) {
-		return associative.remove(key);
-	}
-	
-	public int size() {
-		return dense.size() + associative.size();
-	}
-
 	@Override
 	public boolean equals(AmfValue value) {
 		if(value instanceof AmfArray) {
-			AmfArray arr = (AmfArray)value;
-			if(arr.dense.size() == dense.size()
-			&& arr.associative.size() == associative.size()) {
-				//check dense
+			AmfArray arr = (AmfArray) value;
+			if(arr.dense.size() == dense.size() && arr.associative.size() == associative.size()) {
+				// check dense
 				for(int i = 0; i < dense.size(); ++i) {
 					if(!arr.dense.get(i).equals(dense.get(i))) {
 						return false;
@@ -107,5 +81,142 @@ public class AmfArray extends AmfValue {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Returns the element at the specified position of the dense part of this
+	 * AmfArray.
+	 * 
+	 * @param index
+	 *            index of the element to return
+	 * @return the element at the specified position in this list
+	 * @throws IndexOutOfBoundsException
+	 *             if the index is out of range (index < 0 || index >=
+	 *             getDenseSize())
+	 */
+	public AmfValue get(int index) {
+		return dense.get(index);
+	}
+
+	/**
+	 * Returns the value from the associative part of this AmfArray to which the
+	 * specified key is mapped, or null if it contains no mapping for the key.
+	 * 
+	 * @param key
+	 *            the key whose associated value is to be returned
+	 * @return the value to which the specified key is mapped, or null if the
+	 *         associative part contains no mapping for the key
+	 */
+	public AmfValue get(String key) {
+		return associative.get(key);
+	}
+
+	/**
+	 * Returns map backing the associative part of this AmfArray.
+	 * 
+	 * @return The map backing associative part.
+	 */
+	public Map<String, AmfValue> getAssociative() {
+		return associative;
+	}
+
+	/**
+	 * Returns the size of the associative part of this AmfArray.
+	 * 
+	 * @return the associative size
+	 */
+	public int getAssociativeSize() {
+		return associative.size();
+	}
+
+	/**
+	 * Returns the list backing the dense part of this AmfArray.
+	 * 
+	 * @return The list backing the dense part.
+	 */
+	public List<AmfValue> getDense() {
+		return dense;
+	}
+
+	/**
+	 * Returns the size of the dense part of this AmfArray.
+	 * 
+	 * @return The dense size.
+	 */
+	public int getDenseSize() {
+		return dense.size();
+	}
+
+	@Override
+	public AmfType getType() {
+		return AmfType.Array;
+	}
+
+	/**
+	 * Returns the set of keys associated with the associative part of this
+	 * AmfArray.
+	 * 
+	 * @return The associative keys.
+	 */
+	public Set<String> keySet() {
+		return associative.keySet();
+	}
+
+	/**
+	 * Associates the specified value with the specified key in the associated
+	 * part of this AmfArray. If there was previously a mapping for the key, the
+	 * old value is replaced by the specified value.
+	 * 
+	 * @param key
+	 *            key with which the specified value is to be associated
+	 * 
+	 * @param value
+	 *            key with which the specified value is to be associated
+	 * 
+	 * @return the previous value associated with key, or null if there was no
+	 *         mapping for the key.
+	 */
+	public AmfValue put(String key, AmfValue value) {
+		return associative.put(key, value);
+	}
+
+	/**
+	 * Removes the element at the specified index from the dense part of this
+	 * AmfArray.
+	 * 
+	 * @param index
+	 *            the index of the element to be removed
+	 * @return the element previously at the specified position
+	 * @throws IndexOutOfBoundsException
+	 *             if the index is out of range (index < 0 || index >=
+	 *             getDenseSize())
+	 */
+	public AmfValue remove(int index) {
+		return dense.remove(index);
+	}
+
+	/**
+	 * Removes the mapping for a key from the associated part of this AmfArray
+	 * if it is present. More formally, if this it contains a mapping from key k
+	 * to value v such that (key==null ? k==null : key.equals(k)), that mapping
+	 * is removed.
+	 * 
+	 * @param key
+	 *            key whose mapping is to be removed from the map
+	 * @return the previous value associated with key, or null if there was no
+	 *         mapping for key.
+	 */
+	public AmfValue remove(String key) {
+		return associative.remove(key);
+	}
+
+	/**
+	 * Returns the size of the combined dense and associative parts of this
+	 * AmfArray.
+	 * 
+	 * @return Size of this AmfArray
+	 */
+	public int size() {
+		return dense.size() + associative.size();
 	}
 }

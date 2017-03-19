@@ -24,61 +24,215 @@ package org.csdgn.amf3;
 import java.util.Arrays;
 
 /**
+ * This class handles byte buffer objects associated in the AMF. Internally
+ * makes use of an {@link java.util.ArrayDeque}. This class functions as a basic
+ * byte stack.
  * 
  * @author Robert Maupin
  *
  */
-public class AmfByteArray extends AmfPrimitive<byte[]> {
-	protected AmfByteArray(byte[] value) {
-		super(value);
+public class AmfByteArray extends AmfValue {
+	private byte[] data;
+	private int size;
+
+	/**
+	 * Constructs a new byte array.
+	 */
+	protected AmfByteArray() {
+		data = new byte[8];
+		size = 0;
+	}
+
+	/**
+	 * Returns the current capacity of this AmfByteArray.
+	 * 
+	 * @return The capacity.
+	 */
+	public int capacity() {
+		return data.length;
+	}
+
+	/**
+	 * Resets the size of this byte array and clears data.
+	 */
+	public void clear() {
+		size = 0;
+	}
+
+	@Override
+	public boolean equals(AmfValue value) {
+		if(value instanceof AmfByteArray) {
+			AmfByteArray ba = (AmfByteArray) value;
+			return Arrays.equals(ba.toArray(), toArray());
+		}
+		return false;
 	}
 
 	@Override
 	public AmfType getType() {
 		return AmfType.ByteArray;
 	}
-	
-	public void push(byte value) {
-		byte[] data = getValue();
-		byte[] newData = Arrays.copyOf(data, data.length + 1);
-		newData[data.length] = value;
-		setValue(newData);
+
+	/**
+	 * Indicates if this byte array is empty.
+	 * 
+	 * @return true if the size of this byte array is zero, false otherwise.
+	 */
+	public boolean isEmpty() {
+		return size == 0;
 	}
-	
-	public void push(byte[] value) {
-		byte[] data = getValue();
-		byte[] newData = Arrays.copyOf(data, data.length + value.length);
-		System.arraycopy(value, 0, newData, data.length, value.length);
-		setValue(newData);
-	}
-	
+
+	/**
+	 * Removes and returns the last byte in this array and decrements the size
+	 * by one.
+	 * 
+	 * Throws {@link IndexOutOfBoundsException} if the byte array is empty.
+	 * 
+	 * @return The byte popped from the array.
+	 */
 	public byte pop() {
-		byte[] data = getValue();
-		if(data.length == 0) {
-			throw new UnsupportedOperationException("Cannot pop byte from zero length byte array.");
+		if(size == 0) {
+			throw new IndexOutOfBoundsException("Cannot pop values from an empty array.");
 		}
-		byte[] newData = Arrays.copyOf(data, data.length - 1);
-		setValue(newData);
-		return data[newData.length];
+		return data[--size];
 	}
-	
-	public byte[] pop(int length) {
-		byte[] data = getValue();
-		if(length > data.length) {
-			String msg = "Cannot pop a number of bytes greater than the length of the byte array.";
-			throw new UnsupportedOperationException(msg);
+
+	/**
+	 * <p>
+	 * Removes and returns the last <code>count</code> bytes in this array and
+	 * decrements the byte array by this amount.
+	 * </p>
+	 * <p>
+	 * This method is unlike multiple calls to {@link #pop()} as it will get the
+	 * values in the order they are in the byte array, where as multiple calls
+	 * to {@link #pop()} will return them in reverse order.
+	 * </p>
+	 * <p>
+	 * Throws a {@link IndexOutOfBoundsException} if the <code>count</code> is
+	 * larger than the size of this byte array.
+	 * </p>
+	 * 
+	 * @param count
+	 *            Number of bytes to remove.
+	 * @return The bytes popped from the array.
+	 */
+	public byte[] pop(int count) {
+		if(size < count) {
+			throw new IndexOutOfBoundsException("Cannot pop more values from an array then are available.");
 		}
-		byte[] newData = Arrays.copyOf(data, data.length - length);
-		setValue(newData);
-		return Arrays.copyOfRange(data, data.length - length - 1, length);
+		byte[] ret = Arrays.copyOfRange(data, size - count, size);
+		size -= count;
+		return ret;
 	}
-	
-	public boolean equals(AmfValue value) {
-		if(value instanceof AmfByteArray) {
-			AmfByteArray barr = (AmfByteArray)value;
-			return Arrays.equals(barr.getValue(), getValue());
+
+	/**
+	 * <p>
+	 * Removes the last <code>length</code> bytes in this arrayand stores them
+	 * in <code>b</code> at <code>offset</code> and decrements the byte array by
+	 * this amount.
+	 * </p>
+	 * <p>
+	 * This method is unlike multiple calls to {@link #pop()} as it will get the
+	 * values in the order they are in the byte array, where as multiple calls
+	 * to {@link #pop()} will return them in reverse order.
+	 * </p>
+	 * <p>
+	 * Throws a {@link IndexOutOfBoundsException} if the <code>length</code> is
+	 * larger than the size of this byte array.
+	 * </p>
+	 * 
+	 * @param b
+	 *            The byte array to write to.
+	 * @param offset
+	 *            The offset in the array to start writing at.
+	 * @param length
+	 *            The number of bytes to pop.
+	 */
+	public void popTo(byte[] b, int offset, int length) {
+		if(size < length) {
+			throw new IndexOutOfBoundsException("Cannot pop more values from an array then are available.");
 		}
-		
-		return false;
+		System.arraycopy(data, size - length, b, offset, length);
+		size -= length;
 	}
+
+	/**
+	 * Appends the given byte to the end of this byte array.
+	 * 
+	 * @param b
+	 *            The byte to append.
+	 */
+	public void push(byte b) {
+		data[size++] = b;
+
+		if(size == data.length) {
+			// resize and increase capacity by double
+			data = Arrays.copyOf(data, data.length << 1);
+		}
+	}
+
+	/**
+	 * Appends the given bytes to the end of this byte array.
+	 * 
+	 * @param b
+	 *            The bytes to append.
+	 */
+	public void push(byte[] b) {
+		if(size + b.length >= data.length) {
+			int nCap = (size + b.length) << 1;
+			data = Arrays.copyOf(data, nCap);
+		}
+		System.arraycopy(b, 0, data, size, b.length);
+		size += b.length;
+	}
+
+	/**
+	 * <p>
+	 * Appends <code>length</code> bytes from <code>b</code> starting at
+	 * <code>offset</code> to the end of this byte array.
+	 * </p>
+	 * <p>
+	 * Throws a {@link IndexOutOfBoundsException} if the <code>offset</code>
+	 * plus the <code>length</code> is larger than the size of <code>b</code>.
+	 * </p>
+	 * 
+	 * @param b
+	 *            The array containing the bytes to append.
+	 * @param offset
+	 *            The starting offset in <code>b</code> to start reading from.
+	 * @param length
+	 *            The number of bytes from <code>b</code> to append.
+	 * 
+	 * 
+	 */
+	public void pushFrom(byte[] b, int offset, int length) {
+		if(offset + length > b.length) {
+			throw new IndexOutOfBoundsException("Offset and length exceeds the size of the source array.");
+		}
+		if(size + length >= data.length) {
+			int nCap = (size + length) << 1;
+			data = Arrays.copyOf(data, nCap);
+		}
+		System.arraycopy(b, offset, data, size, length);
+		size += b.length;
+	}
+
+	/**
+	 * Returns the current size of the data in this AmfByteArray.
+	 * 
+	 * @return The size.
+	 */
+	public int size() {
+		return size;
+	}
+
+	/**
+	 * Gets the data of this AmfByteArray as a standard java byte array.
+	 * 
+	 * @return The byte array.
+	 */
+	public byte[] toArray() {
+		return Arrays.copyOf(data, size);
+	}
+
 }

@@ -22,27 +22,37 @@
 package org.csdgn.amf3;
 
 /**
+ * Associated with the AMF true and false types. This class simply stores a Java
+ * Boolean internally.
  * 
  * @author Robert Maupin
- *
  */
 public class AmfBoolean extends AmfPrimitive<Boolean> {
-	
+
+	/**
+	 * Constructs this AmfBoolean with the default value of false.
+	 */
 	public AmfBoolean() {
 		super(false);
 	}
-	
+
+	/**
+	 * Constructs this AmfBoolean with the specified value.
+	 * 
+	 * @param value
+	 *            The value.
+	 */
 	public AmfBoolean(boolean value) {
 		super(value);
 	}
-	
+
 	@Override
 	public AmfType getType() {
 		if(getValue()) {
-			//TRUE
+			// TRUE
 			return AmfType.True;
 		}
-		//FALSE
+		// FALSE
 		return AmfType.False;
 	}
 }

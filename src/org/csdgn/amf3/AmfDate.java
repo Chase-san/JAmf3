@@ -24,14 +24,26 @@ package org.csdgn.amf3;
 import java.time.Instant;
 
 /**
- * Makes use of the newer Instant class instead of the legacy Date class.
+ * This class handles date objects associated in the AMF. Makes use of the newer
+ * Instant class instead of the legacy Date class.
+ * 
  * @author Robert Maupin
  */
 public class AmfDate extends AmfDouble {
+	/**
+	 * Creates a AmfDate at the epoch of 1970-01-01T00:00:00Z.
+	 */
 	public AmfDate() {
 		super(0.0);
 	}
-	
+
+	/**
+	 * Creates an AmfDate with the given double value, which will be truncated
+	 * to determine the number of milliseconds since the epoch of
+	 * 1970-01-01T00:00:00Z.
+	 * 
+	 * @param value
+	 */
 	public AmfDate(double value) {
 		super(value);
 	}
@@ -41,14 +53,27 @@ public class AmfDate extends AmfDouble {
 		return AmfType.Date;
 	}
 
+	/**
+	 * Gets the date as an Instant.
+	 * 
+	 * @return An Instant of this AmfDate.
+	 */
 	public Instant getInstant() {
-		return Instant.ofEpochMilli((long)(double)getValue());
+		return Instant.ofEpochMilli((long) (double) getValue());
 	}
 
+	/**
+	 * Sets this AmfDate by means of the specified Instant.
+	 * 
+	 * @param instant
+	 *            The instant to use to set this value. Cannot be null.
+	 * @throws UnsupportedOperationException
+	 *             If the provided value is null.
+	 */
 	public void setInstant(Instant instant) {
 		if(instant == null) {
 			throw new UnsupportedOperationException("Instant cannot be null.");
 		}
-		setValue((double)instant.toEpochMilli());
+		setValue((double) instant.toEpochMilli());
 	}
 }
