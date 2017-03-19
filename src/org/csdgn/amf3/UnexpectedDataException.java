@@ -22,8 +22,8 @@
 package org.csdgn.amf3;
 
 /**
- * Thrown when a {@link Externalizable} finds unexpected data during the read
- * operation.
+ * Thrown when an {@link Externalizable} or a AmfInputStream finds unexpected
+ * data during a read operation.
  * 
  * @author Robert Maupin
  */

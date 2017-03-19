@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.zip.DataFormatException;
 
 import org.csdgn.amf3.*;
 
@@ -174,14 +173,14 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 	 * Gets the name stored in the amf file.
 	 * 
 	 * @return the file name, or null if the stream does not represent a file.
-	 * @throws DataFormatException
+	 * @throws UnexpectedDataException
 	 *             the stream data was not in an expected format.
 	 * @throws IOException
 	 *             the stream has been closed and the contained input stream
 	 *             does not support reading after close, or another I/O error
 	 *             occurs.
 	 */
-	public String getName() throws IOException, DataFormatException {
+	public String getName() throws IOException, UnexpectedDataException {
 		if(!started) {
 			readFileHeader();
 		}
@@ -196,10 +195,10 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 	 *             the stream has been closed and the contained input stream
 	 *             does not support reading after close, or another I/O error
 	 *             occurs.
-	 * @throws DataFormatException
+	 * @throws UnexpectedDataException
 	 *             the stream data was not in an expected format.
 	 */
-	public boolean hasNext() throws IOException, DataFormatException {
+	public boolean hasNext() throws IOException, UnexpectedDataException {
 		if(!started) {
 			readFileHeader();
 		}
@@ -222,10 +221,10 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 	 *             the stream has been closed and the contained input stream
 	 *             does not support reading after close, or another I/O error
 	 *             occurs.
-	 * @throws DataFormatException
+	 * @throws UnexpectedDataException
 	 *             the stream data was not in an expected format.
 	 */
-	public AmfEntry next() throws IOException, DataFormatException {
+	public AmfEntry next() throws IOException, UnexpectedDataException {
 		if(!started) {
 			readFileHeader();
 		}
@@ -251,7 +250,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		};
 	}
 
-	private AmfArray readArray() throws IOException, DataFormatException {
+	private AmfArray readArray() throws IOException, UnexpectedDataException {
 		// Stored by ref?
 		Header h = readHeader();
 		if(h.isReference) {
@@ -313,7 +312,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		return date;
 	}
 
-	private AmfDictionary readDictionary() throws IOException, DataFormatException {
+	private AmfDictionary readDictionary() throws IOException, UnexpectedDataException {
 		// Stored by ref?
 		Header h = readHeader();
 		if(h.isReference) {
@@ -338,10 +337,10 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		return new AmfDouble(in.readDouble());
 	}
 
-	private void readFileHeader() throws IOException, DataFormatException {
+	private void readFileHeader() throws IOException, UnexpectedDataException {
 		// calls are evaluated in left to right order
 		if(in.readUnsignedByte() != 0x0 || in.readUnsignedByte() != 0xBF) {
-			throw new DataFormatException("Unknown Endianness");
+			throw new UnexpectedDataException("Unknown Endianness");
 		}
 
 		// Size
@@ -353,7 +352,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		// Magic signature
 		String magic = readString(4);
 		if(!"TCSO".equals(magic)) {
-			throw new DataFormatException("Wrong file tag");
+			throw new UnexpectedDataException("Wrong file tag");
 		}
 		in.skipBytes(6);
 
@@ -364,7 +363,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		// Version
 		int version = (int) in.readInt();
 		if(version < 3) {
-			throw new DataFormatException("Wrong AMF version");
+			throw new UnexpectedDataException("Wrong AMF version");
 		}
 	}
 
@@ -376,7 +375,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		return new AmfInteger(readS29());
 	}
 
-	private AmfObject readObject() throws IOException, DataFormatException {
+	private AmfObject readObject() throws IOException, UnexpectedDataException {
 		Header h = readHeader();
 		if(h.isReference) {
 			return (AmfObject) referenceTable.get(h.countIndexLength);
@@ -514,7 +513,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		}
 	}
 
-	private AmfValue readValue() throws IOException, DataFormatException {
+	private AmfValue readValue() throws IOException, UnexpectedDataException {
 		int typeId = in.readUnsignedByte();
 		AmfType type = AmfType.get(typeId);
 		switch(type) {
@@ -573,7 +572,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 			return readXml();
 		}
 
-		throw new DataFormatException(String.format("Unknown Value Type: 0x%x", typeId));
+		throw new UnexpectedDataException(String.format("Unknown Value Type: 0x%x", typeId));
 	}
 
 	private AmfVector.Double readVectorDouble() throws IOException {
@@ -593,7 +592,7 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 		return result;
 	}
 
-	private AmfVector.Generic readVectorGeneric() throws IOException, DataFormatException {
+	private AmfVector.Generic readVectorGeneric() throws IOException, UnexpectedDataException {
 		Header h = readHeader();
 		if(h.isReference) {
 			return (AmfVector.Generic) referenceTable.get(h.countIndexLength);
@@ -670,10 +669,10 @@ public class AmfInputStream implements Closeable, AutoCloseable {
 	 *             the stream has been closed and the contained input stream
 	 *             does not support reading after close, or another I/O error
 	 *             occurs.
-	 * @throws DataFormatException
+	 * @throws UnexpectedDataException
 	 *             the stream data was not in an expected format.
 	 */
-	public void skipNext() throws IOException, DataFormatException {
+	public void skipNext() throws IOException, UnexpectedDataException {
 		if(!started) {
 			readFileHeader();
 		}
