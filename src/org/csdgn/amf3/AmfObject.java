@@ -21,7 +21,9 @@
  */
 package org.csdgn.amf3;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AmfObject extends AmfValue {
@@ -89,8 +91,10 @@ public class AmfObject extends AmfValue {
 			}
 
 			@Override
-			public String[] getProperties() {
-				return sealedMap.keySet().toArray(new String[sealedMap.size()]);
+			public List<String> getProperties() {
+				ArrayList<String> list = new ArrayList<String>();
+				list.addAll(sealedMap.keySet());
+				return list;
 			}
 
 			@Override

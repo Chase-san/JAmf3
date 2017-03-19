@@ -21,6 +21,8 @@
  */
 package org.csdgn.amf3;
 
+import java.util.List;
+
 /**
  * This defines a Trait. Traits are never stored and are only created dynamically
  * and used when writing to a stored object.
@@ -29,8 +31,24 @@ package org.csdgn.amf3;
  *
  */
 public interface Trait {
+	/**
+	 * Determines if this trait is dynamic or not.
+	 * @return true if the trait is dynamic, false otherwise
+	 */
 	public boolean isDynamic();
+	/**
+	 * Determines if this trait is externalizable or not.
+	 * @return true if the trait is externalizable, false otherwise.
+	 */
 	public boolean isExternalizable();
+	/**
+	 * Gets the name of this trait.
+	 * @return the trait name
+	 */
 	public String getName();
-	public String[] getProperties();
+	/**
+	 * Gets the list of sealed properties associated with this trait.
+	 * @return List of trait properties.
+	 */
+	public List<String> getProperties();
 }

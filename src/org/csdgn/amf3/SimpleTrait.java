@@ -21,6 +21,9 @@
  */
 package org.csdgn.amf3;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * A simple trait implementation that does not allow modification of its values.
  * @author Robert Maupin
@@ -30,13 +33,13 @@ public class SimpleTrait implements Trait {
 	protected String name;
 	protected boolean dynamic;
 	protected boolean externalizable;
-	protected String[] properties;
+	protected List<String> properties;
 	
 	public SimpleTrait(String name, boolean isDynamic, boolean isExternalizable, String[] properties) {
 		this.name = name;
 		this.dynamic = isDynamic;
 		this.externalizable = isExternalizable;
-		this.properties = properties;
+		this.properties = Arrays.asList(properties);
 	}
 		
 	@Override
@@ -55,7 +58,7 @@ public class SimpleTrait implements Trait {
 	}
 
 	@Override
-	public String[] getProperties() {
+	public List<String> getProperties() {
 		return properties;
 	}
 
