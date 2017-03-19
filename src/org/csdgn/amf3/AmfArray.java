@@ -27,6 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfArray extends AmfValue {
 	private Map<String, AmfValue> associative;
 	private List<AmfValue> dense;

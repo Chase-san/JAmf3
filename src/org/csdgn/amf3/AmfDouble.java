@@ -21,6 +21,11 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfDouble extends AmfPrimitive<Double> {
 	public AmfDouble() {
 		super(0.0);

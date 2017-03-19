@@ -21,38 +21,74 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * List of types associated with the the Amf Objects. These are mostly used for
+ * storage.
+ * 
+ * @author Robert Maupin
+ *
+ */
 public enum AmfType {
-    Undefined     ( 0x00 ),
-    Null          ( 0x01 ),
-    False         ( 0x02 ),
-    True          ( 0x03 ),
-    Integer       ( 0x04 ),
-    Double        ( 0x05 ),
-    String        ( 0x06 ), 
-    XmlDoc        ( 0x07 ),
-    Date          ( 0x08 ),
-    Array         ( 0x09 ),
-    Object        ( 0x0A ),
-    Xml           ( 0x0B ),
-    ByteArray     ( 0x0C ),
-    VectorInt     ( 0x0D ),
-    VectorUInt    ( 0x0E ),
-    VectorDouble  ( 0x0F ),
-    VectorGeneric ( 0x10 ),
-    Dictionary    ( 0x11 );
-    
+	/** @see AmfUndefined */
+	Undefined(0x00),
+	/** @see AmfNull */
+	Null(0x01),
+	/** @see AmfBoolean */
+	False(0x02),
+	/** @see AmfBoolean */
+	True(0x03),
+	/** @see AmfInteger */
+	Integer(0x04),
+	/** @see AmfDouble */
+	Double(0x05),
+	/** @see AmfString */
+	String(0x06),
+	/** @see AmfXml */
+	XmlDoc(0x07),
+	/** @see AmfDate */
+	Date(0x08),
+	/** @see AmfArray */
+	Array(0x09),
+	/** @see AmfObject */
+	Object(0x0A),
+	/** @see AmfXml */
+	Xml(0x0B),
+	/** @see AmfByteArray */
+	ByteArray(0x0C),
+	/** @see AmfVector.Integer */
+	VectorInt(0x0D),
+	/** @see AmfVector.UnsignedInteger */
+	VectorUInt(0x0E),
+	/** @see AmfVector.Double */
+	VectorDouble(0x0F),
+	/** @see AmfVector.Generic */
+	VectorGeneric(0x10),
+	/** @see AmfDictionary */
+	Dictionary(0x11);
+
+	/**
+	 * The id of the type marker for the AmfType.
+	 */
 	public final int id;
-	
-    private AmfType(int id) {
-    	this.id = id;
-    }
-    
-    public static AmfType get(int id) {
-    	for(AmfType type : values()) {
-    		if(type.id == id) {
-    			return type;
-    		}
-    	}
-    	return null;
-    }
+
+	private AmfType(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * Gets the AmfType associated with the provided type marker id.
+	 * 
+	 * @param id
+	 *            The type marker identifier.
+	 * @return The AmfType associated with the id, or null if there is no
+	 *         associated type.
+	 */
+	public static AmfType get(int id) {
+		for(AmfType type : values()) {
+			if(type.id == id) {
+				return type;
+			}
+		}
+		return null;
+	}
 }

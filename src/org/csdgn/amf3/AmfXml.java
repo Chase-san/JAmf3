@@ -21,29 +21,45 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * This class handles XML objects associated in the AMF. The XmlDocument option
+ * of this is references an older and less capable version of the XML format
+ * that AMF supports, which includes E4X syntax. This Object simple treats both
+ * of these types as a string.
+ * 
+ * @author Robert Maupin
+ */
 public class AmfXml extends AmfString {
 	private boolean isXmlDocument;
-	
+
+	/**
+	 * Constructs this AmfXml as a standard AMF XML element. Meaning the
+	 * isXmlDocument will default to false for these.
+	 */
 	public AmfXml() {
 		this.isXmlDocument = false;
 	}
 
 	/**
-	 * Determines if this is the older XmlDocument AMF type.
-	 * @return true if XmlDocument, false otherwise
+	 * Constructs this AmfXml as a standard AMF XML element with the given
+	 * option determining if this should use the older XmlDocument AMF type.
+	 * 
+	 * @param isXmlDocument
+	 *            true if XmlDocument, false otherwise
 	 */
-	public boolean isXmlDocument() {
-		return isXmlDocument;
-	}
-
-	public void setXmlDocument(boolean isXmlDocument) {
-		this.isXmlDocument = isXmlDocument;
-	}
-
 	public AmfXml(boolean isXmlDocument) {
 		this.isXmlDocument = isXmlDocument;
 	}
-	
+
+	@Override
+	public boolean equals(AmfValue value) {
+		if(value instanceof AmfXml && value.getType() == getType()) {
+			AmfXml xml = (AmfXml) value;
+			return xml.getValue().equals(getValue());
+		}
+		return false;
+	}
+
 	@Override
 	public AmfType getType() {
 		if(isXmlDocument) {
@@ -52,13 +68,24 @@ public class AmfXml extends AmfString {
 		return AmfType.Xml;
 	}
 
-	@Override
-	public boolean equals(AmfValue value) {
-		if(value instanceof AmfXml
-		&& value.getType() == getType()) {
-			AmfXml xml = (AmfXml)value;
-			return xml.getValue().equals(getValue());
-		}
-		return false;
+	/**
+	 * Indicates if this is the older XmlDocument AMF type.
+	 * 
+	 * @return true if XmlDocument, false otherwise
+	 */
+	public boolean isXmlDocument() {
+		return isXmlDocument;
+	}
+
+	/**
+	 * Sets if this AmfXml object should be stored as the older XmlDocument or
+	 * not.
+	 * 
+	 * @param isXmlDocument
+	 *            true if it should be stored as an XmlDocument, false
+	 *            otherwise.
+	 */
+	public void setXmlDocument(boolean isXmlDocument) {
+		this.isXmlDocument = isXmlDocument;
 	}
 }

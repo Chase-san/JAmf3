@@ -22,22 +22,27 @@
 package org.csdgn.amf3;
 
 /**
- * Thrown when a {@link Externalizable} finds unexpected data during the read operation.
+ * Thrown when a {@link Externalizable} finds unexpected data during the read
+ * operation.
+ * 
  * @author Robert Maupin
  */
 public class UnexpectedDataException extends Exception {
 	private static final long serialVersionUID = 1825843628349563242L;
 
 	/**
-	 * Creates an UnexpectedDataException
+	 * Creates an UnexpectedDataException without a message.
 	 */
 	public UnexpectedDataException() {
-		
+
 	}
-	
+
 	/**
 	 * Creates an UnexpectedDataException with the specified detail message.
-	 * @param text  the detail message. The detail message is saved for later retrieval by the {@link #getMessage()} method.
+	 * 
+	 * @param text
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
 	 */
 	public UnexpectedDataException(String text) {
 		super(text);

@@ -22,9 +22,22 @@
 package org.csdgn.amf3;
 
 /**
- * Defines custom data capable of being stored in 
+ * Defines custom data capable of being stored in
+ * 
  * @author Robert Maupin
  */
 public interface ExternalizableFactory {
+	/**
+	 * Creates a new externalizable based on the name of the objects trait.
+	 * 
+	 * @param traitName
+	 *            The name of the trait to create an externalizable for.
+	 * @return The created externalizable for the given trait name, or
+	 *         <code>null</code> if one could not be created. A
+	 *         <code>null</code> value will cause an
+	 *         {@link org.csdgn.amf3.stream.AmfInputStream} or an
+	 *         {@link org.csdgn.amf3.stream.AmfOutputStream} to fail.
+	 * 
+	 */
 	public Externalizable create(String traitName);
 }

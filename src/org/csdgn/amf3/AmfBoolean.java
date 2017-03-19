@@ -21,6 +21,11 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfBoolean extends AmfPrimitive<Boolean> {
 	
 	public AmfBoolean() {

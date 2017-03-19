@@ -26,22 +26,31 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * Defines custom data capable of being stored in the Action Message Format (AMF).
+ * Defines custom data capable of being stored in the Action Message Format
+ * (AMF).
+ * 
  * @author Robert Maupin
  */
 public interface Externalizable {
 	/**
 	 * Reads the data for this externalizable from the given data input source.
-	 * @param in data input source
-	 * @throws IOException thrown when an I/O error occurs.
-	 * @throws UnexpectedDataException thrown when there is a read failure due to unexpected data.
+	 * 
+	 * @param in
+	 *            data input source
+	 * @throws IOException
+	 *             thrown when an I/O error occurs.
+	 * @throws UnexpectedDataException
+	 *             thrown when there is a read failure due to unexpected data.
 	 */
 	void readExternal(DataInput in) throws IOException, UnexpectedDataException;
-	
+
 	/**
 	 * Writes the data for this externalizable to the given data output target.
-	 * @param out data output target
-	 * @throws IOException thrown when an I/O error occurs.
+	 * 
+	 * @param out
+	 *            data output target
+	 * @throws IOException
+	 *             thrown when an I/O error occurs.
 	 */
 	void writeExternal(DataOutput out) throws IOException;
 }

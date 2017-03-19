@@ -26,30 +26,33 @@ import java.util.List;
 
 /**
  * A simple trait implementation that does not allow modification of its values.
+ * 
  * @author Robert Maupin
  *
  */
 public class SimpleTrait implements Trait {
-	protected String name;
 	protected boolean dynamic;
 	protected boolean externalizable;
+	protected String name;
 	protected List<String> properties;
-	
+
+	/**
+	 * Creates a trait with the given values.
+	 * 
+	 * @param name
+	 *            the name of the trait.
+	 * @param isDynamic
+	 *            true if the trait is dynamic
+	 * @param isExternalizable
+	 *            true if the trait is dynamic
+	 * @param properties
+	 *            an array of the sealed properties
+	 */
 	public SimpleTrait(String name, boolean isDynamic, boolean isExternalizable, String[] properties) {
 		this.name = name;
 		this.dynamic = isDynamic;
 		this.externalizable = isExternalizable;
 		this.properties = Arrays.asList(properties);
-	}
-		
-	@Override
-	public boolean isDynamic() {
-		return dynamic;
-	}
-
-	@Override
-	public boolean isExternalizable() {
-		return externalizable;
 	}
 
 	@Override
@@ -60,6 +63,16 @@ public class SimpleTrait implements Trait {
 	@Override
 	public List<String> getProperties() {
 		return properties;
+	}
+
+	@Override
+	public boolean isDynamic() {
+		return dynamic;
+	}
+
+	@Override
+	public boolean isExternalizable() {
+		return externalizable;
 	}
 
 }

@@ -11,6 +11,11 @@ import java.util.Map;
 import java.util.zip.DataFormatException;
 import javax.activation.UnsupportedDataTypeException;
 
+/**
+ * This class is obsolete and should not be used.
+ * @deprecated Use {@link org.csdgn.amf3.stream.AmfInputStream} instead.
+ *
+ */
 public class AmfReaderClassic {
 	private static class Header {
 		protected boolean isReference;

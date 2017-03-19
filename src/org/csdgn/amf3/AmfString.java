@@ -21,6 +21,11 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfString extends AmfPrimitive<String> {
 	public AmfString() {
 		super("");

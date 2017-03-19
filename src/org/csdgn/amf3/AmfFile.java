@@ -23,6 +23,11 @@ package org.csdgn.amf3;
 
 import java.util.LinkedHashMap;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfFile extends LinkedHashMap<String, AmfValue> {
 	private static final long serialVersionUID = -3519519376048332883L;
 

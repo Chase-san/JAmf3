@@ -23,6 +23,11 @@ package org.csdgn.amf3;
 
 import java.util.Arrays;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfByteArray extends AmfPrimitive<byte[]> {
 	protected AmfByteArray(byte[] value) {
 		super(value);

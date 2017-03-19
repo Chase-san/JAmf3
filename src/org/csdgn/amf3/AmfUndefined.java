@@ -21,6 +21,11 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * Associated with the AMF undefined type.
+ * @author Robert Maupin
+ *
+ */
 public class AmfUndefined extends AmfValue {
 
 	@Override

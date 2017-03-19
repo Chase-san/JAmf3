@@ -21,6 +21,11 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * Associated with the AMF null type.
+ * @author Robert Maupin
+ *
+ */
 public class AmfNull extends AmfValue {
 	@Override
 	public AmfType getType() {

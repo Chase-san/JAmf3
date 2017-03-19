@@ -21,6 +21,11 @@
  */
 package org.csdgn.amf3;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public abstract class AmfPrimitive<T> extends AmfValue {
 	private T value;
 

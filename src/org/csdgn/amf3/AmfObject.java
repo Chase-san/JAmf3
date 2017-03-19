@@ -26,6 +26,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfObject extends AmfValue {
 	private Map<String, AmfValue> dynamicMap;
 	private Externalizable customData;

@@ -25,6 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 
+ * @author Robert Maupin
+ *
+ */
 public class AmfDictionary extends AmfValue {
 	private Map<AmfValue, AmfValue> map;
 	private boolean weakKeys;

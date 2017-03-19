@@ -29,12 +29,6 @@ package org.csdgn.amf3;
  */
 public abstract class AmfValue {
 	/**
-	 * This is used to get the value type of the AMF value type.
-	 * @return the type id of the value type.
-	 */
-	public abstract AmfType getType();
-	
-	/**
 	 * This determines if the given value equals another value exactly.
 	 * This method is used in building the string and object reference tables.
 	 * @param value The value to check this values equality against.
@@ -43,6 +37,9 @@ public abstract class AmfValue {
 	public abstract boolean equals(AmfValue value);
 	
 	/**
+	 * Determines if the given object is an AmfValue and equals
+	 * this value. Makes use of {@link #equals(AmfValue)} to
+	 * determine equality.
 	 * @see #equals(AmfValue)
 	 */
 	public boolean equals(Object obj) {
@@ -51,4 +48,10 @@ public abstract class AmfValue {
 		}
 		return false;
 	}
+	
+	/**
+	 * This is used to get the value type of the AMF value type.
+	 * @return the type id of the value type.
+	 */
+	public abstract AmfType getType();
 }
