@@ -24,8 +24,8 @@ package org.csdgn.amf3;
 /**
  * This class handles XML objects associated in the AMF. The XmlDocument option
  * of this is references an older and less capable version of the XML format
- * that AMF supports, which includes E4X syntax. This Object simple treats both
- * of these types as a string.
+ * that AMF supports, which included E4X support. This class simply treats both
+ * of these as a string.
  * 
  * @author Robert Maupin
  */
@@ -87,5 +87,18 @@ public class AmfXml extends AmfString {
 	 */
 	public void setXmlDocument(boolean isXmlDocument) {
 		this.isXmlDocument = isXmlDocument;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		if(isXmlDocument) {
+			buf.append("XMLDoc[");
+		} else {
+			buf.append("XML[");
+		}
+		buf.append(getValue());
+		buf.append("]");
+		return buf.toString();
 	}
 }

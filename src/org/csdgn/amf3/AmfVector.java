@@ -50,6 +50,21 @@ public abstract class AmfVector<E> extends AmfValue implements List<E> {
 		public AmfType getType() {
 			return AmfType.VectorDouble;
 		}
+		
+		@Override
+		public String toString() {
+			StringBuilder buf = new StringBuilder();
+			buf.append("VectorDouble{");
+			boolean first = true;
+			for(AmfDouble val : this) {
+				if(!first) {
+					buf.append(",");
+				}
+				buf.append(val.getValue());
+			}
+			buf.append("}");
+			return buf.toString();
+		}
 	}
 
 	/**
@@ -81,6 +96,21 @@ public abstract class AmfVector<E> extends AmfValue implements List<E> {
 		public void setTypeName(String typeName) {
 			this.typeName = typeName;
 		}
+		
+		@Override
+		public String toString() {
+			StringBuilder buf = new StringBuilder();
+			buf.append("Vector{");
+			boolean first = true;
+			for(AmfValue val : this) {
+				if(!first) {
+					buf.append(",");
+				}
+				buf.append(val);
+			}
+			buf.append("}");
+			return buf.toString();
+		}
 	}
 
 	/**
@@ -94,6 +124,21 @@ public abstract class AmfVector<E> extends AmfValue implements List<E> {
 		public AmfType getType() {
 			return AmfType.VectorInt;
 		}
+		
+		@Override
+		public String toString() {
+			StringBuilder buf = new StringBuilder();
+			buf.append("VectorInt{");
+			boolean first = true;
+			for(AmfInteger val : this) {
+				if(!first) {
+					buf.append(",");
+				}
+				buf.append(val.getValue());
+			}
+			buf.append("}");
+			return buf.toString();
+		}
 	}
 
 	/**
@@ -106,6 +151,20 @@ public abstract class AmfVector<E> extends AmfValue implements List<E> {
 		@Override
 		public AmfType getType() {
 			return AmfType.VectorUInt;
+		}
+		@Override
+		public String toString() {
+			StringBuilder buf = new StringBuilder();
+			buf.append("VectorUnsigned{");
+			boolean first = true;
+			for(AmfInteger val : this) {
+				if(!first) {
+					buf.append(",");
+				}
+				buf.append(val.getUnsignedValue());
+			}
+			buf.append("}");
+			return buf.toString();
 		}
 	}
 

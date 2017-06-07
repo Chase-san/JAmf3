@@ -234,5 +234,19 @@ public class AmfByteArray extends AmfValue {
 	public byte[] toArray() {
 		return Arrays.copyOf(data, size);
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("ByteArray{");
+		for(int i = 0; i < size; ++i) {
+			if(i != 0) {
+				buf.append(",");
+			}
+			buf.append(String.format("%02x", data[i]));
+		}
+		buf.append("}");
+		return buf.toString();
+	}
 
 }

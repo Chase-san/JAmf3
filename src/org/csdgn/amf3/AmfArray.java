@@ -219,4 +219,32 @@ public class AmfArray extends AmfValue {
 	public int size() {
 		return dense.size() + associative.size();
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Array{");
+		boolean first = true;
+		//associative first
+		for(String key : associative.keySet()) {
+			if(!first) {
+				buf.append(",");
+			}
+			first = false;
+			buf.append(key);
+			buf.append("=");
+			buf.append(associative.get(key));
+		}
+		//dense
+		for(AmfValue value : dense) {
+			if(!first) {
+				buf.append(",");
+			}
+			first = false;
+			buf.append(value);
+		}
+		
+		buf.append("}");
+		return buf.toString();
+	}
 }

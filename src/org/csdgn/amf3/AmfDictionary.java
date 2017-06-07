@@ -22,7 +22,7 @@
 package org.csdgn.amf3;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,7 +59,7 @@ public class AmfDictionary extends AmfValue implements Map<AmfValue, AmfValue> {
 	 * Defines a AmfDictionary that has strong keys.
 	 */
 	public AmfDictionary() {
-		map = new HashMap<AmfValue, AmfValue>();
+		map = new LinkedHashMap<AmfValue, AmfValue>();
 		setWeakKeys(false);
 	}
 
@@ -178,5 +178,24 @@ public class AmfDictionary extends AmfValue implements Map<AmfValue, AmfValue> {
 	@Override
 	public Collection<AmfValue> values() {
 		return map.values();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Dictionary{");
+		boolean first = true;
+		for(AmfValue key : map.keySet()) {
+			if(!first) {
+				buf.append(",");
+			}
+			first = false;
+			buf.append(key);
+			buf.append("=");
+			buf.append(map.get(key));
+		}
+		//don't even try to print custom data
+		buf.append("}");
+		return buf.toString();
 	}
 }

@@ -69,4 +69,13 @@ public class AmfInteger extends AmfPrimitive<Integer> {
 	public void setUnsignedValue(long value) {
 		setValue((int) (value & 0xFFFFFFFFL));
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Int[");
+		buf.append(getValue());
+		buf.append("]");
+		return buf.toString();
+	}
 }

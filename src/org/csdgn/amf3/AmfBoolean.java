@@ -55,4 +55,12 @@ public class AmfBoolean extends AmfPrimitive<Boolean> {
 		// FALSE
 		return AmfType.False;
 	}
+	
+	@Override
+	public String toString() {
+		if(getValue()) {
+			return "Boolean[True]";
+		}
+		return "Boolean[False]";
+	}
 }

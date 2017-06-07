@@ -40,4 +40,9 @@ public class AmfUndefined extends AmfValue {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return "Undefined[]";
+	}
 }

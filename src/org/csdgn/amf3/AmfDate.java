@@ -76,4 +76,13 @@ public class AmfDate extends AmfDouble {
 		}
 		setValue((double) instant.toEpochMilli());
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Date[");
+		buf.append(getInstant().toString());
+		buf.append("]");
+		return buf.toString();
+	}
 }

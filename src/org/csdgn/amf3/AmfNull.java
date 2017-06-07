@@ -39,4 +39,9 @@ public class AmfNull extends AmfValue {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return "Null[]";
+	}
 }

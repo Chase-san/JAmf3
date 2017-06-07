@@ -49,4 +49,13 @@ public class AmfDouble extends AmfPrimitive<Double> {
 	public AmfType getType() {
 		return AmfType.Double;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Double[");
+		buf.append(getValue());
+		buf.append("]");
+		return buf.toString();
+	}
 }

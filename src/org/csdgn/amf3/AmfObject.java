@@ -221,4 +221,36 @@ public class AmfObject extends AmfValue {
 		}
 		this.traitName = traitName;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("Object:");
+		buf.append(traitName);
+		buf.append("{");
+		boolean first = true;
+		//sealed
+		for(String key : sealedMap.keySet()) {
+			if(!first) {
+				buf.append(",");
+			}
+			first = false;
+			buf.append(key);
+			buf.append("=");
+			buf.append(sealedMap.get(key));
+		}
+		//dynamic
+		for(String key : dynamicMap.keySet()) {
+			if(!first) {
+				buf.append(",");
+			}
+			first = false;
+			buf.append(key);
+			buf.append("=");
+			buf.append(dynamicMap.get(key));
+		}
+		//don't even try to print custom data
+		buf.append("}");
+		return buf.toString();
+	}
 }

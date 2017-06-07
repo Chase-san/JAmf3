@@ -56,4 +56,13 @@ public class AmfString extends AmfPrimitive<String> {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("String[");
+		buf.append(getValue());
+		buf.append("]");
+		return buf.toString();
+	}
 }
