@@ -82,7 +82,7 @@ public class AmfObject extends AmfValue {
 	}
 
 	/**
-	 * Gets the {@link #Externalizable} associated with this AmfObject.
+	 * Gets the {@link Externalizable} associated with this AmfObject.
 	 * 
 	 * @return The externalizable object associated with this AmfObject.
 	 */
@@ -177,7 +177,7 @@ public class AmfObject extends AmfValue {
 	 * Determines if this object is dynamic and if the dynamic section will be
 	 * stored on writing.
 	 * 
-	 * @param isDynamic
+	 * @param isDynamic true if the object has a dynamic section, false otherwise.
 	 */
 	public void setDynamic(boolean isDynamic) {
 		this.isDynamic = isDynamic;

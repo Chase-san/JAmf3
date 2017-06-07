@@ -22,7 +22,7 @@
 package org.csdgn.amf3;
 
 /**
- * Defines custom data capable of being stored in
+ * Defines a factory for creating Externalizables.
  * 
  * @author Robert Maupin
  */

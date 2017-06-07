@@ -211,7 +211,6 @@ public abstract class AmfVector<E> extends AmfValue implements List<E> {
 	/**
 	 * Returns the capacity of this vector.
 	 * 
-	 * @param capacity
 	 * @return The capacity of this vector, or -1 if no capacity has been
 	 *         specified.
 	 */

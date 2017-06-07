@@ -24,8 +24,8 @@ package org.csdgn.amf3;
 import java.util.List;
 
 /**
- * This defines a Trait. Traits are never stored and are only created
- * dynamically and used when writing to a stored object.
+ * This defines a Trait. Traits are never stored and are created dynamically and
+ * are only generally used when reading or writing to disk.
  * 
  * @author Robert Maupin
  *

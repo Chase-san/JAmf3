@@ -42,7 +42,7 @@ public class AmfDate extends AmfDouble {
 	 * to determine the number of milliseconds since the epoch of
 	 * 1970-01-01T00:00:00Z.
 	 * 
-	 * @param value
+	 * @param value the amf date value
 	 */
 	public AmfDate(double value) {
 		super(value);

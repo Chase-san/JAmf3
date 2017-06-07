@@ -91,8 +91,8 @@ public class AmfArray extends AmfValue {
 	 *            index of the element to return
 	 * @return the element at the specified position in this list
 	 * @throws IndexOutOfBoundsException
-	 *             if the index is out of range (index < 0 || index >=
-	 *             getDenseSize())
+	 *             if the index is out of range, where index is less than 0 or index greater than or equal to
+	 *             {@link #getDenseSize()}.
 	 */
 	public AmfValue get(int index) {
 		return dense.get(index);
@@ -188,8 +188,8 @@ public class AmfArray extends AmfValue {
 	 *            the index of the element to be removed
 	 * @return the element previously at the specified position
 	 * @throws IndexOutOfBoundsException
-	 *             if the index is out of range (index < 0 || index >=
-	 *             getDenseSize())
+	 *             if the index is out of range where index is less than 0 or index is greater than or equal to 
+	 *             {@link #getDenseSize()}.
 	 */
 	public AmfValue remove(int index) {
 		return dense.remove(index);
