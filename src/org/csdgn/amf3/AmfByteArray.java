@@ -22,6 +22,7 @@
 package org.csdgn.amf3;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * This class handles byte buffer objects associated in the AMF. Internally
@@ -233,6 +234,14 @@ public class AmfByteArray extends AmfValue {
 	 */
 	public byte[] toArray() {
 		return Arrays.copyOf(data, size);
+	}
+	
+	/**
+	 * Gets the internal data array of this byte array.
+	 * @return the backing data byte array
+	 */
+	protected byte[] getBackingArray() {
+		return data;
 	}
 	
 	@Override

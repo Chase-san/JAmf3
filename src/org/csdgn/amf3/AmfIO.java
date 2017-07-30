@@ -22,13 +22,19 @@
 package org.csdgn.amf3;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,27 +67,6 @@ public class AmfIO {
 		public AmfValue value();
 	}
 
-	private static class Header {
-		protected int countIndexLength;
-		protected boolean isReference;
-
-		protected Header(int u29) {
-			this.countIndexLength = u29;
-			this.isReference = !readNextBit();
-		}
-
-		/**
-		 * Reads the next bit and reduces the countIndexLength by a bit.
-		 * 
-		 * @return
-		 */
-		protected boolean readNextBit() {
-			boolean result = (countIndexLength & 1) == 1;
-			countIndexLength >>= 1;
-			return result;
-		}
-	}
-	
 	/**
 	 * Contains all Amf Input methods and logic.
 	 * @author Robert Maupin
@@ -89,12 +74,13 @@ public class AmfIO {
 	private static class AmfInput implements Closeable, AutoCloseable {
 		private List<ExternalizableFactory> factories;
 		private boolean file;
+		private boolean headerRead;
 		private DataInputStream in;
 		private String name;
 		private List<AmfValue> referenceTable;
-		private boolean headerRead;
 		private List<String> stringTable;
 		private List<Trait> traitTable;
+		
 
 		/**
 		 * Creates an AmfInputStream with the given InputStream as input.
@@ -336,7 +322,7 @@ public class AmfIO {
 			// Size
 			int size = in.readInt();
 			// TODO
-			// if (size + 6 != _reader.BaseStream.Length) throw new
+			// if(size + 6 != fileSize) throw new
 			// InvalidOperationException("Wrong file size");
 
 			// Magic signature
@@ -649,8 +635,527 @@ public class AmfIO {
 	 * Contains all Amf Output methods and logic.
 	 * @author Robert Maupin
 	 */
-	private static class AmfOutput {
+	private static class AmfOutput implements Closeable, AutoCloseable {
+		private ByteArrayOutputStream buffer;
+		private List<ExternalizableFactory> factories;
+		private boolean file;
+		private OutputStream fileOut;
+		private boolean headerWritten;
+		private String name;
+		private DataOutputStream out;
+		private List<AmfValue> referenceTable;
+		private List<String> stringTable;
+		private List<Trait> traitTable;
+		
+		public AmfOutput(OutputStream out, boolean file) {
+			if(!(out instanceof BufferedOutputStream)) {
+				out = new BufferedOutputStream(out);
+			}
+			this.fileOut = out;
+			this.buffer = new ByteArrayOutputStream();
+			this.out = new DataOutputStream(this.buffer);
+			this.stringTable = new ArrayList<String>();
+			this.referenceTable = new ArrayList<AmfValue>();
+			this.traitTable = new ArrayList<Trait>();
+			this.factories = new ArrayList<ExternalizableFactory>();
+			this.headerWritten = false;
+			this.name = null;
+			this.file = file;
+		}
+		
+		/**
+		 * Associates the specified ExternalizableFactory with this AmfInputStream.
+		 * Every ExternalizableFactory is called in the order they were added in
+		 * attempt to find one that will provide a proper Externalizable for use.
+		 * 
+		 * @param factory
+		 *            the ExternalizableFactory to add
+		 */
+		protected void addExternalizableFactory(ExternalizableFactory factory) {
+			if(Objects.isNull(factory)) {
+				throw new IllegalArgumentException("The factory provided cannot be null.");
+			}
+			factories.add(factory);
+		}
+		
+		@Override
+		public void close() throws IOException {
+			out.close();
+			
+			byte[] data = buffer.toByteArray();
+			buffer.close();
+			
+			//update header length
+			if(file) {
+				int size = data.length - 6;
+				
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				DataOutputStream dos = new DataOutputStream(baos);
+				dos.writeInt(size);
+				
+				byte[] sizeBytes = baos.toByteArray();
+				System.arraycopy(sizeBytes, 0, data, 2, 4);
+			}
+			
+			//write to actual output
+			fileOut.write(data);
+			fileOut.flush();
+			fileOut.close();
+		}
+		
+		/**
+		 * Set the name to be stored in the SOL file.
+		 * 
+		 * @param name the file name to store in the SOL file.
+		 * @throws UnexpectedDataException
+		 *             the stream data was not in an expected format.
+		 * @throws IOException
+		 *             the stream has been closed and the contained input stream
+		 *             does not support reading after close, or another I/O error
+		 *             occurs.
+		 */
+		protected void setName(String name) {
+			this.name = name;
+		}
+	    
+	    private void writeArray(AmfArray arr) throws IOException {
+			if(!writeRef(arr)) {
+				writeU29(arr.getDenseSize(), true);
+				//out.write(arr.getBackingArray(), 0, arr.size());
+				//write associative data (key-value pairs)
+				Map<String, AmfValue> ass = arr.getAssociative();
+				for(String key : ass.keySet()) {
+					writeString(key);
+					writeValue(ass.get(key));
+				}
+				writeString("");
+				
+				//write dense data (list line 0 to count)
+				for(AmfValue val : arr.getDense()) {
+					writeValue(val);
+				}
+			}
+			
+		}
+		
+		private void writeByteArray(AmfByteArray arr) throws IOException {
+			if(!writeRef(arr)) {
+				writeU29(arr.size(), true);
+				out.write(arr.getBackingArray(), 0, arr.size());
+			}
+		}
+		
+		private void writeDate(AmfDate date) throws IOException {
+			if(!writeRef(date)) {
+				writeU29(0, true);
+				out.writeDouble(date.getValue());
+			}
+		}
 
+		private void writeDictionary(AmfDictionary dict) throws IOException {
+			if(!writeRef(dict)) {
+				writeU29(dict.size(), true);
+				
+				//out.write
+				out.writeBoolean(dict.hasWeakKeys());
+				
+				for(AmfValue key : dict.keySet()) {
+					writeValue(key);
+					writeValue(dict.get(key));
+				}
+			}
+		}
+		
+		/**
+		 * Writes the given name/value to a SOL. If writing to an serialized
+		 * AMFObject, call this only once. Name will be ignored. Calling this
+		 * more than once outside of a file may produce undefined behavior.
+		 * 
+		 * If writing to an SOL file and the header has not been written, it
+		 * will automatically be written.
+		 * 
+		 * @param name The name of the entry
+		 * @param value The value of the entry
+		 * 
+		 * @throws IOException if an I/O exception occured during the write.
+		 */
+		protected void writeEntry(String name, AmfValue value) throws IOException {
+			writeFileHeader();
+			
+			writeString(name);
+			writeValue(value);
+			
+			//append trailing zero if a file
+			if(file) {
+				out.writeByte(0);
+			}
+		}
+		
+		private void writeFileHeader() throws IOException {
+			if(!file || headerWritten) {
+				return;
+			}
+			//write BOM
+			out.writeByte(0);
+			out.writeByte(0xBF);
+
+			//file size placeholder
+			out.writeInt(0); //4 bytes @ index 2
+			
+			//write magic header
+			out.writeByte('T');
+			out.writeByte('C');
+			out.writeByte('S');
+			out.writeByte('O');
+			
+			//write some values??
+			//not sure what these values are actually
+			out.write(new byte[]{0,4,0,0,0,0});
+			
+			//write name
+			out.write(name.getBytes(StandardCharsets.US_ASCII));
+			
+			//write version
+			out.writeInt(3);
+			
+			headerWritten = true;
+		}
+		
+		private void writeI29(int value) throws IOException {
+            final int upperExclusiveBound = 1 << 29;
+            if (value < 0) {
+            	writeU29(value + upperExclusiveBound); // -x is stored as 2^29 - x
+            } else {
+            	writeU29(value);
+            }
+        }
+		
+		private void writeObject(AmfObject obj) throws IOException {
+			if(!writeRef(obj)) {
+				writeTrait(obj.getTrait());
+				
+				//sealed properties
+				Map<String, AmfValue> map = obj.getSealedMap();
+				for(String key : map.keySet()) {
+					AmfValue val = map.get(key);
+					writeValue(val);
+				}
+				
+				//dynamic properties
+				if(obj.isDynamic()) {
+					
+					map = obj.getDynamicMap();
+					for(String key : map.keySet()) {
+						writeString(key);
+						writeValue(map.get(key));
+					}
+					writeString("");
+				}
+				
+				//externalizable properties
+				if(obj.isExternalizable()) {
+					Externalizable ext = obj.getExternalizableObject();
+					if(ext != null) {
+						ext.writeExternal(out);
+					}
+				}
+			}
+		}
+		
+		private void writePlainString(String str) throws IOException {
+			byte[] data = str.getBytes(StandardCharsets.UTF_8);
+			writeU29(data.length, true);
+			out.write(data);
+		}
+		
+		// Most object types are stored by reference so that they are only serialized once. After that only their reference index is stored.
+		/**
+		 * Write new reference or get reference
+		 * @param obj the object to write
+		 * @return true if reference exists, false otherwise.
+		 */
+	    private boolean writeRef(AmfValue obj) throws IOException {
+	        int index;
+	        
+	        //referenceTable
+	        if((index = referenceTable.indexOf(obj)) == -1) {
+	        	writeU29(index, false);
+	        	return true;
+	        }
+	        
+	        referenceTable.add(obj);
+	        return false;
+	    }
+		
+		private void writeString(String str) throws IOException {
+			int index = -1;
+			if(str.length() == 0) {
+				//empty string
+				writeU29(0, true);
+			} else if((index = stringTable.indexOf(str)) != -1) {
+				//reference
+				writeU29(index, false);
+			} else {
+				//plain string
+				writePlainString(str);
+				stringTable.add(str);
+			}
+        }
+		
+		void writeTrait(Trait trait) throws IOException {
+			int index = traitTable.indexOf(trait);
+			if(index != -1) {
+				writeU29((index << 2) | 1);
+				return;
+			}
+			traitTable.add(trait);
+			index = 3;
+			if(trait.isExternalizable()) {
+				index |= 4;
+			}
+			if(trait.isDynamic()) {
+				index |= 8;
+			}
+			List<String> props = trait.getProperties();
+			index |= (props.size() << 4);
+			writeU29(index);
+			
+			writeString(trait.getName());
+			for(String name : props) {
+				writeString(name);
+			}
+		}
+		
+		private void writeU29(long value) throws IOException {
+            // Unsigned integer encoded on 8 to 32 bits, with 7 to 29 significant bits.
+            // The most signficant bits are stored on the left (at the beginning).
+            // The fourth byte always have 8 significant bits. 
+            // 7-7-7-8  or  7-7-7   or 7-7  or 7
+
+            // Say that value == A << 21 | B << 14 | C << 7 | D
+            // We first test whether A is zero, write it or continue. Then B, then C, then D.
+
+
+            // Initial shift to get the 7 most significant bits. 
+            // If we do have four bytes, then we will have 29 bits and need to shift by 22 (29 - 7), 15, 8, 0. 
+            // If we do have up to three bytes, then we will have up to 21 bits and will need to shift by 14 (21 - 7), 7, 0.
+            boolean fourBytes = (value >> 21) != 0;    // Shift is not circular in C#
+            int shift = fourBytes ? 22 : 14;        
+            int numBytes = 0;
+
+            while (shift >= 0) {
+                int mask = (numBytes == 3 ? 0xFF : 0x7F);
+                byte b = (byte)((value >> shift) & mask);
+
+                if (shift == 8) {
+                	shift = 0;  // Only happen when there are four bytes to write.
+                } else {
+                	shift -= 7;
+                }
+
+                // Skip if:
+                // * No group of bits have been written yet.
+                // * Those 7 most signficant bits so far are zero
+                // * They are not the 7 least significant bits (we always need to write those to store the number 0).
+                if (b == 0 && numBytes == 0 && shift >= 0) {
+                	continue;    
+                }
+                ++numBytes;
+
+                // Write a continuation bit if those are not the least significant bits (shift would be <0 for those ones)
+                if (shift >= 0) {
+                	b |= 0x80;
+                }
+                out.writeByte(b);
+            }
+		}
+		
+		private void writeU29(long value, boolean flag) throws IOException {
+			value <<= 1;
+            if (flag) value |= 1;
+            writeU29(value);
+		}
+		
+		/**
+		 * Writes a given value to the stream.
+		 * @param value the value to write.
+		 * @throws IOException 
+		 */
+		protected void writeValue(AmfValue value) throws IOException {
+			AmfType type = value.getType();
+			out.write(type.id);
+			switch(type) {
+			case Array:
+				writeArray((AmfArray)value);
+				break;
+			case ByteArray:
+				writeByteArray((AmfByteArray)value);
+				break;
+			case Date:
+				writeDate((AmfDate)value);
+				break;
+			case Dictionary:
+				writeDictionary((AmfDictionary)value);
+				break;
+			case Double:
+				out.writeDouble(((AmfDouble)value).getValue());
+				break;
+			case Integer:
+				writeI29(((AmfInteger)value).getValue());
+				break;
+			case Object:
+				writeObject((AmfObject)value);
+				break;
+			case String:
+				writeString(((AmfString)value).getValue());
+				break;
+			case VectorDouble:
+				writeVector((AmfVector.Double)value);
+				break;
+			case VectorGeneric:
+				writeVector((AmfVector.Generic)value);
+				break;
+			case VectorInt:
+				writeVector((AmfVector.Integer)value);
+				break;
+			case VectorUInt:
+				writeVector((AmfVector.UnsignedInteger)value);
+				break;
+			case Xml:
+			case XmlDoc:
+				writeXml((AmfXml)value);
+				break;
+				
+			case Null:
+			case False:
+			case True:
+			case Undefined:
+				//nothing more required
+				break;
+			default:
+				//WTF is this shit?
+				break;
+			}
+		}
+		
+		private void writeVector(AmfVector.Double vec) throws IOException {
+			if(!writeRef(vec)) {
+				writeU29(vec.size(), true);
+				out.writeBoolean(vec.isFixedLength());
+				for(AmfDouble val : vec) {
+					out.writeDouble(val.getValue());
+				}
+			}
+		}
+		
+		private void writeVector(AmfVector.Generic vec) throws IOException {
+			if(!writeRef(vec)) {
+				writeU29(vec.size(), true);
+				out.writeBoolean(vec.isFixedLength());
+				writeString(vec.getTypeName());
+				for(AmfValue val : vec) {
+					writeValue(val);
+				}
+			}
+		}
+		
+		private void writeVector(AmfVector.Integer vec) throws IOException {
+			if(!writeRef(vec)) {
+				writeU29(vec.size(), true);
+				out.writeBoolean(vec.isFixedLength());
+				for(AmfInteger val : vec) {
+					out.writeInt(val.getValue());
+				}
+			}
+	    }
+		
+		private void writeVector(AmfVector.UnsignedInteger vec) throws IOException {
+			if(!writeRef(vec)) {
+				writeU29(vec.size(), true);
+				out.writeBoolean(vec.isFixedLength());
+				for(AmfInteger val : vec) {
+					out.writeInt((int)val.getUnsignedValue());
+				}
+			}
+		}
+		
+		private void writeXml(AmfXml xml) throws IOException {
+			if(!writeRef(xml)) {
+				writePlainString(xml.getValue());
+			}
+		}
+		
+		
+	}
+	
+	private static class Header {
+		protected int countIndexLength;
+		protected boolean isReference;
+
+		protected Header(int u29) {
+			this.countIndexLength = u29;
+			this.isReference = !readNextBit();
+		}
+
+		/**
+		 * Reads the next bit and reduces the countIndexLength by a bit.
+		 * 
+		 * @return
+		 */
+		protected boolean readNextBit() {
+			boolean result = (countIndexLength & 1) == 1;
+			countIndexLength >>= 1;
+			return result;
+		}
+	}
+
+	/**
+	 * Reads a serialized AmfValue from the given file.
+	 * 
+	 * @param file
+	 *            The file to read from.
+	 * @param ext
+	 *            The ExternalizableFactorys to use, if any.
+	 * @return The AmfValue read.
+	 * @throws FileNotFoundException
+	 *             if the file was not found
+	 * @throws IOException
+	 *             if the program encountered an I/O error during reading.
+	 * @throws UnexpectedDataException
+	 *             if invalid data was found during the read, often occurs with
+	 *             an invalid or unsupported format.
+	 */
+	public static final AmfValue read(File file, ExternalizableFactory... ext)
+			throws FileNotFoundException, IOException, UnexpectedDataException {
+		return read(new FileInputStream(file), ext);
+	}
+
+	/**
+	 * Reads a serialized AmfValue from the given input stream.
+	 * 
+	 * @param input
+	 *            The input stream to read from.
+	 * @param ext
+	 *            The ExternalizableFactorys to use, if any.
+	 * @return The AmfValue read.
+	 * @throws FileNotFoundException
+	 *             if the file was not found
+	 * @throws IOException
+	 *             if the program encountered an I/O error during reading.
+	 * @throws UnexpectedDataException
+	 *             if invalid data was found during the read, often occurs with
+	 *             an invalid or unsupported format.
+	 */
+	public static final AmfValue read(InputStream input, ExternalizableFactory... ext)
+			throws IOException, UnexpectedDataException {
+		AmfValue value = null;
+		try (AmfInput in = new AmfInput(input, false)) {
+			for (ExternalizableFactory factory : ext) {
+				in.addExternalizableFactory(factory);
+			}
+			value = in.next().value();
+		}
+		return value;
 	}
 
 	/**
@@ -704,55 +1209,57 @@ public class AmfIO {
 		}
 		return file;
 	}
-
+	
 	/**
-	 * Reads a serialized AmfValue from the given file.
+	 * Writes AMF to the given SOL file.
 	 * 
+	 * @param amf
+	 * 	The AMFFile to write.
 	 * @param file
-	 *            The file to read from.
+	 *            The file to write from.
 	 * @param ext
 	 *            The ExternalizableFactorys to use, if any.
-	 * @return The AmfValue read.
 	 * @throws FileNotFoundException
 	 *             if the file was not found
 	 * @throws IOException
-	 *             if the program encountered an I/O error during reading.
+	 *             if the program encountered an I/O error during writeing.
 	 * @throws UnexpectedDataException
-	 *             if invalid data was found during the read, often occurs with
+	 *             if invalid data was found during the write, often occurs with
 	 *             an invalid or unsupported format.
 	 */
-	public static final AmfValue read(File file, ExternalizableFactory... ext)
+	public static final void writeFile(AmfFile amf, File file, ExternalizableFactory... ext)
 			throws FileNotFoundException, IOException, UnexpectedDataException {
-		return read(new FileInputStream(file), ext);
+		writeFile(amf, new FileOutputStream(file), ext);
 	}
 
 	/**
-	 * Reads a serialized AmfValue from the given input stream.
+	 * Writes an AMFFile to the given output stream.
 	 * 
-	 * @param input
-	 *            The input stream to read from.
+	 * @param amf
+	 * 	The AMFFile to write.
+	 * @param file
+	 *            The file to write from.
 	 * @param ext
 	 *            The ExternalizableFactorys to use, if any.
-	 * @return The AmfValue read.
 	 * @throws FileNotFoundException
 	 *             if the file was not found
 	 * @throws IOException
-	 *             if the program encountered an I/O error during reading.
+	 *             if the program encountered an I/O error during writeing.
 	 * @throws UnexpectedDataException
-	 *             if invalid data was found during the read, often occurs with
+	 *             if invalid data was found during the write, often occurs with
 	 *             an invalid or unsupported format.
 	 */
-	public static final AmfValue read(InputStream input, ExternalizableFactory... ext)
+	public static final void writeFile(AmfFile amf, OutputStream output, ExternalizableFactory... ext)
 			throws IOException, UnexpectedDataException {
-		AmfValue value = null;
-		try (AmfInput in = new AmfInput(input, false)) {
+		try (AmfOutput out = new AmfOutput(output, true)) {
 			for (ExternalizableFactory factory : ext) {
-				in.addExternalizableFactory(factory);
+				out.addExternalizableFactory(factory);
 			}
-			value = in.next().value();
+			out.setName(amf.getName());
+			for(String key : amf.keySet()) {
+				AmfValue val = amf.get(key);
+				out.writeEntry(key, val);
+			}
 		}
-		return value;
 	}
-	
-	
 }

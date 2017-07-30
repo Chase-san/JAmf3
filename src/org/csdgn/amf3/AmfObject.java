@@ -130,6 +130,27 @@ public class AmfObject extends AmfValue {
 			public boolean isExternalizable() {
 				return isExternalizable;
 			}
+			
+			public boolean equals(Object obj) {
+				if(!(obj instanceof Trait)) {
+					return false;
+				}
+				Trait trait = (Trait)obj;
+				
+				if(!traitName.equals(trait.getName())) {
+					return false;
+				}
+				
+				if(isDynamic != trait.isDynamic()) {
+					return false;
+				}
+				
+				if(isExternalizable != trait.isExternalizable()) {
+					return false;
+				}
+				
+				return getProperties().equals(trait.getProperties());
+			}
 		};
 	}
 
