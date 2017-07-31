@@ -71,13 +71,7 @@ public class AmfArray extends AmfValue {
 		if(value instanceof AmfArray) {
 			AmfArray arr = (AmfArray) value;
 			if(arr.dense.size() == dense.size() && arr.associative.size() == associative.size()) {
-				// check dense
-				for(int i = 0; i < dense.size(); ++i) {
-					if(!arr.dense.get(i).equals(dense.get(i))) {
-						return false;
-					}
-				}
-				return arr.associative.equals(associative);
+				return arr.dense.equals(dense) && arr.associative.equals(associative);
 			}
 		}
 		return false;

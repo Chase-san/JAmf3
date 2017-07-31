@@ -23,6 +23,7 @@ package org.csdgn.amf3;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -113,7 +114,7 @@ public class AmfIO {
 
 			// Stored by value
 			AmfXml result = new AmfXml(isDocument);
-			result.setValue(readString(h.countIndexLength));
+			result.setValue(readUTF8(h.countIndexLength));
 			referenceTable.add(result);
 			return result;
 		}
@@ -433,18 +434,24 @@ public class AmfIO {
 			}
 
 			// Read the string
-			String str = readString(h.countIndexLength);
+			String str = readUTF8(h.countIndexLength);
 			stringTable.add(str);
 
 			return str;
 		}
-
+		
 		private String readString(int length) throws IOException {
-			StringBuilder buf = new StringBuilder();
-			for(int i = 0; i < length; ++i) {
-				buf.append((char) in.readUnsignedByte());
-			}
-			return buf.toString();
+			//UTF-8 support
+			byte[] data = new byte[length];
+			in.read(data);
+			return new String(data, StandardCharsets.US_ASCII);
+		}
+
+		private String readUTF8(int length) throws IOException {
+			//UTF-8 support
+			byte[] data = new byte[length];
+			in.read(data);
+			return new String(data, StandardCharsets.UTF_8);
 		}
 
 		private Trait readTrait(Header h) throws IOException {
@@ -720,7 +727,7 @@ public class AmfIO {
 	    
 	    private void writeArray(AmfArray arr) throws IOException {
 			if(!writeRef(arr)) {
-				writeU29(arr.getDenseSize(), true);
+				writeU29Flag(arr.getDenseSize(), true);
 				//out.write(arr.getBackingArray(), 0, arr.size());
 				//write associative data (key-value pairs)
 				Map<String, AmfValue> ass = arr.getAssociative();
@@ -740,21 +747,21 @@ public class AmfIO {
 		
 		private void writeByteArray(AmfByteArray arr) throws IOException {
 			if(!writeRef(arr)) {
-				writeU29(arr.size(), true);
+				writeU29Flag(arr.size(), true);
 				out.write(arr.getBackingArray(), 0, arr.size());
 			}
 		}
 		
 		private void writeDate(AmfDate date) throws IOException {
 			if(!writeRef(date)) {
-				writeU29(0, true);
+				writeU29Flag(0, true);
 				out.writeDouble(date.getValue());
 			}
 		}
 
 		private void writeDictionary(AmfDictionary dict) throws IOException {
 			if(!writeRef(dict)) {
-				writeU29(dict.size(), true);
+				writeU29Flag(dict.size(), true);
 				
 				//out.write
 				out.writeBoolean(dict.hasWeakKeys());
@@ -813,7 +820,9 @@ public class AmfIO {
 			out.write(new byte[]{0,4,0,0,0,0});
 			
 			//write name
-			out.write(name.getBytes(StandardCharsets.US_ASCII));
+			byte[] nameBytes = name.getBytes(StandardCharsets.US_ASCII);
+			out.writeShort(nameBytes.length & 0xFFFF);
+			out.write(nameBytes);
 			
 			//write version
 			out.writeInt(3);
@@ -843,7 +852,6 @@ public class AmfIO {
 				
 				//dynamic properties
 				if(obj.isDynamic()) {
-					
 					map = obj.getDynamicMap();
 					for(String key : map.keySet()) {
 						writeString(key);
@@ -864,7 +872,7 @@ public class AmfIO {
 		
 		private void writePlainString(String str) throws IOException {
 			byte[] data = str.getBytes(StandardCharsets.UTF_8);
-			writeU29(data.length, true);
+			writeU29Flag(data.length, true);
 			out.write(data);
 		}
 		
@@ -877,9 +885,12 @@ public class AmfIO {
 	    private boolean writeRef(AmfValue obj) throws IOException {
 	        int index;
 	        
-	        //referenceTable
-	        if((index = referenceTable.indexOf(obj)) == -1) {
-	        	writeU29(index, false);
+	        //My system works way better than actionscript does at determining
+	        //if two objects are equal, so I bashed the knees on some things
+	        //so that it is equally bad at determining if some things are equal
+	        boolean beLessGoodPlox = obj instanceof AmfObject || obj instanceof AmfArray;
+	        if(!beLessGoodPlox && (index = referenceTable.indexOf(obj)) != -1) {
+	        	writeU29Flag(index, false);
 	        	return true;
 	        }
 	        
@@ -891,10 +902,10 @@ public class AmfIO {
 			int index = -1;
 			if(str.length() == 0) {
 				//empty string
-				writeU29(0, true);
+				writeU29Flag(0, true);
 			} else if((index = stringTable.indexOf(str)) != -1) {
 				//reference
-				writeU29(index, false);
+				writeU29Flag(index, false);
 			} else {
 				//plain string
 				writePlainString(str);
@@ -927,52 +938,36 @@ public class AmfIO {
 		}
 		
 		private void writeU29(long value) throws IOException {
-            // Unsigned integer encoded on 8 to 32 bits, with 7 to 29 significant bits.
-            // The most signficant bits are stored on the left (at the beginning).
-            // The fourth byte always have 8 significant bits. 
-            // 7-7-7-8  or  7-7-7   or 7-7  or 7
-
-            // Say that value == A << 21 | B << 14 | C << 7 | D
-            // We first test whether A is zero, write it or continue. Then B, then C, then D.
-
-
-            // Initial shift to get the 7 most significant bits. 
-            // If we do have four bytes, then we will have 29 bits and need to shift by 22 (29 - 7), 15, 8, 0. 
-            // If we do have up to three bytes, then we will have up to 21 bits and will need to shift by 14 (21 - 7), 7, 0.
-            boolean fourBytes = (value >> 21) != 0;    // Shift is not circular in C#
-            int shift = fourBytes ? 22 : 14;        
-            int numBytes = 0;
-
-            while (shift >= 0) {
-                int mask = (numBytes == 3 ? 0xFF : 0x7F);
-                byte b = (byte)((value >> shift) & mask);
-
-                if (shift == 8) {
-                	shift = 0;  // Only happen when there are four bytes to write.
-                } else {
-                	shift -= 7;
-                }
-
-                // Skip if:
-                // * No group of bits have been written yet.
-                // * Those 7 most signficant bits so far are zero
-                // * They are not the 7 least significant bits (we always need to write those to store the number 0).
-                if (b == 0 && numBytes == 0 && shift >= 0) {
-                	continue;    
-                }
-                ++numBytes;
-
-                // Write a continuation bit if those are not the least significant bits (shift would be <0 for those ones)
-                if (shift >= 0) {
-                	b |= 0x80;
-                }
-                out.writeByte(b);
-            }
+			int iVal = (int)(value & 0x3FFFFFFF);
+			
+			//much faster (and smaller!) than some complicated loop
+			if(value < 0x80) {
+				//7 bits
+				out.writeByte(iVal & 0x7F);
+			} else if(value < 0x4000) {
+				//14 bits
+				out.writeByte(0x80 | ((iVal >> 7) & 0x7F));
+				out.writeByte((iVal & 0x7F));
+			} else if(value < 0x200000) {
+				//21 bits
+				out.writeByte(0x80 | ((iVal >> 14) & 0x7F));
+				out.writeByte(0x80 | ((iVal >> 7) & 0x7F));
+				out.writeByte((iVal & 0x7F));
+			} else {
+				//29 bits, this one doesn't follow the above pattern
+				out.writeByte(0x80 | ((iVal >> 22) & 0x7F));
+				out.writeByte(0x80 | ((iVal >> 15) & 0x7F));
+				out.writeByte(0x80 | ((iVal >> 8) & 0x7F));
+				out.writeByte((iVal & 0xFF));
+			}
+			
 		}
 		
-		private void writeU29(long value, boolean flag) throws IOException {
+		private void writeU29Flag(long value, boolean flag) throws IOException {
 			value <<= 1;
-            if (flag) value |= 1;
+            if (flag) {
+            	value |= 1;
+            }
             writeU29(value);
 		}
 		
@@ -1040,7 +1035,7 @@ public class AmfIO {
 		
 		private void writeVector(AmfVector.Double vec) throws IOException {
 			if(!writeRef(vec)) {
-				writeU29(vec.size(), true);
+				writeU29Flag(vec.size(), true);
 				out.writeBoolean(vec.isFixedLength());
 				for(AmfDouble val : vec) {
 					out.writeDouble(val.getValue());
@@ -1050,7 +1045,7 @@ public class AmfIO {
 		
 		private void writeVector(AmfVector.Generic vec) throws IOException {
 			if(!writeRef(vec)) {
-				writeU29(vec.size(), true);
+				writeU29Flag(vec.size(), true);
 				out.writeBoolean(vec.isFixedLength());
 				writeString(vec.getTypeName());
 				for(AmfValue val : vec) {
@@ -1061,7 +1056,7 @@ public class AmfIO {
 		
 		private void writeVector(AmfVector.Integer vec) throws IOException {
 			if(!writeRef(vec)) {
-				writeU29(vec.size(), true);
+				writeU29Flag(vec.size(), true);
 				out.writeBoolean(vec.isFixedLength());
 				for(AmfInteger val : vec) {
 					out.writeInt(val.getValue());
@@ -1071,7 +1066,7 @@ public class AmfIO {
 		
 		private void writeVector(AmfVector.UnsignedInteger vec) throws IOException {
 			if(!writeRef(vec)) {
-				writeU29(vec.size(), true);
+				writeU29Flag(vec.size(), true);
 				out.writeBoolean(vec.isFixedLength());
 				for(AmfInteger val : vec) {
 					out.writeInt((int)val.getUnsignedValue());

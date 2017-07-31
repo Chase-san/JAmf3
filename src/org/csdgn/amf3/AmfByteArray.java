@@ -22,7 +22,6 @@
 package org.csdgn.amf3;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 /**
  * This class handles byte buffer objects associated in the AMF. Internally
